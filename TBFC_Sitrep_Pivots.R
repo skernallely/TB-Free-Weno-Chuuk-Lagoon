@@ -1,27 +1,23 @@
 ## TB-Free Chuuk R code
 ## SitRep Pivots
 
+#--------------------------
+#WORKING DIRECTORY
+setwd("~/PIHOA/TBFC/R Analysis/Weno_Chuuk_Lagoon")
+
 #PACKAGES
-library(tidyverse) 
-library(readxl)
-library(openxlsx)
-library(lubridate)
-library(stringr)
-library(vtable) #allows sumtable
-library(janitor)
+library(tidyverse)
 library(scales)
+library(readxl)
+library(janitor)
+library(vtable) #allows sumtable
 library(naniar) #clean up and replace blanks,etc with NAs
 
-
-#formulas
+#FORMULAS
 `%notin%` <- Negate(`%in%`)
 is.not.na <- function(x) !is.na(x)
 
-
-###
-#FUNCTIONS
-###
-
+#STANDARDS
 #population and rate estimates
 rate_estimates_age <- read_excel("Data/TB rate estimates.xlsx", col_names=TRUE,
                                  sheet="overall_rates") %>%
@@ -42,7 +38,7 @@ rate_estimates_village <- read_excel("Data/TB rate estimates.xlsx", col_names=TR
          full_village_name = paste(island,village)
   )
 
-#standards
+#lagoon regions
 lagoon_list <- c("WENO","PAATA","ONEI","TOL","POLLE","UDOT","FEFEN",
                  "UMAN", "TONOAS")
 
@@ -59,24 +55,23 @@ lagoon_region <- tribble(
   "TONOAS","SOUTHERN NAMONEAS"
 )
 
+#tb cascade order
 graph_order <- c("pop","no_registered","no_screened","no_active_tb",
                  "no_ltbi","no_hd_prevention")
 
 graph_order_long <- c("Total Population","No. Registered", "No. Screened", 
                         "No. Active TB", "No. LTBI", "No. HD Prevention")
-###
-##DATA
-###
+#--------------------------
 
+##DATA
 #load in clean flatfile
-flatfile_clean <- read_excel("Data/flatfile_clean.xlsx",
+tbfc_analysis <- read_excel("Data/tbfc_analysis_dataset.xlsx",
                              guess_max = 20000, col_names = TRUE) %>%
   mutate(age_group = factor(age_group, 
                             levels=c("0-4","5-9","10-19","20-39","40-59","60+"))
          )
 
-
-sitrep_pivots_age <-   flatfile_clean %>%
+sitrep_pivots_age <-   tbfc_analysis %>%
   group_by(age_group) %>%
   summarise(no_registered = n(),
             no_screened = sum(screened_at_clinic),
@@ -84,18 +79,17 @@ sitrep_pivots_age <-   flatfile_clean %>%
             no_active_tb = sum(active_tb_tx),
             
             no_ltbi = sum(ltbi_diagnosis),
-            no_ltbi_recommended = sum(ltbi_tx_indicated),
             no_ltbi_started = sum(ltbi_tx_started),
             
             no_hd_referrals = sum(hd_further_assessment),
             no_hd_prevention = sum(hd_prev_given),
             
-            no_diabetes = sum(dm_a1c_result),
-            no_new_diabetes = sum(new_dm_result)
+            no_diabetes = sum(dm_a1c_result, na.rm=T),
+            no_new_diabetes = sum(new_dm_result, na.rm=T)
   ) %>%
   adorn_totals()
 
-sitrep_pivots_sex<- flatfile_clean %>%
+sitrep_pivots_sex<- tbfc_analysis %>%
   group_by(sex) %>%
   summarise(no_registered = n(),
             no_screened = sum(screened_at_clinic),
@@ -103,21 +97,20 @@ sitrep_pivots_sex<- flatfile_clean %>%
             no_active_tb = sum(active_tb_tx),
             
             no_ltbi = sum(ltbi_diagnosis),
-            no_ltbi_recommended = sum(ltbi_tx_indicated),
             no_ltbi_started = sum(ltbi_tx_started),
             
             no_hd_referrals = sum(hd_further_assessment),
             no_hd_prevention = sum(hd_prev_given),
             
-            no_diabetes = sum(dm_a1c_result),
-            no_new_diabetes = sum(new_dm_result)
+            no_diabetes = sum(dm_a1c_result, na.rm=T),
+            no_new_diabetes = sum(new_dm_result, na.rm=T)
   ) %>%
   adorn_totals()
 
 
 ##COMPLETE VILLAGE TABLE
 
-complete_village<- flatfile_clean %>%
+complete_village<- tbfc_analysis %>%
   mutate(full_village_name = paste(toupper(municipality),toupper(village))) %>%
   group_by(full_village_name) %>%
   summarise(no_registered = n(),
@@ -127,7 +120,7 @@ complete_village<- flatfile_clean %>%
             no_active_tb = sum(active_tb_tx),
             pct_active_of_screened = no_active_tb/no_screened,
             
-            no_ltbi = sum(tst_pos),
+            no_ltbi = sum(ltbi_diagnosis),
             pct_ltbi_of_screened = no_ltbi/no_screened,
 
             no_hd_prevention = sum(hd_prev_given),
@@ -144,18 +137,7 @@ complete_village<- flatfile_clean %>%
   mutate_at(c("pct_seen_of_registered","pct_active_of_screened","pct_ltbi_of_screened",
               "pct_hd_prev_of_screened","pct_registered_of_pop"), label_percent())
 
-complete_village %>%
-  select(full_village_name,pop,no_registered,no_screened,no_active_tb,
-           no_ltbi,no_hd_prevention) %>%
-  #rearrange into long form for ggplot
-  pivot_longer(cols=2:7, names_to="category", values_to = "count") %>%
-  group_by(full_village_name) %>%
-  #calculate cascade pcts by full_village_name
-  mutate(municipality = gsub( " .*$", "", full_village_name),
-         category = factor(category, 
-                           levels=graph_order))
-
-
+#graph of clinic screening numbers by island
 complete_village %>%
   select(full_village_name,pop,no_registered,no_screened,no_active_tb,
          no_ltbi,no_hd_prevention) %>%
@@ -184,29 +166,9 @@ complete_village %>%
     subtitle = "All Ages, Chuuk"
   )
 
-
-
-flatfile_clean %>%
-  group_by(municipality) %>%
-  mutate(tst_placed = case_when(tst_place_visit == "Y" ~ 1,
-                                .default = 0),
-         screened_at_clinic = if_else(is.not.na(tst_date_read) |
-                                        is.not.na(active_tb) |
-                                        is.not.na(result_hd_assessment) |
-                                        is.not.na(weight),
-                                      1, 0,
-                                      missing = 0)) %>%
-  summarise(no_tst_placed = sum(tst_placed),
-            no_screened = sum(screened_at_clinic),
-            no_tst_read = sum(tst_read)) %>%
-  filter(municipality %in% c("POLLE","PAATA","ONEI")) %>%
-  adorn_totals()
-
-
-
 ### MARCH 25 BOARD MEETING SITREP UPDATE
 
-board_update_sitrep <-   flatfile_clean %>%
+board_update_sitrep <-   tbfc_analysis %>%
   group_by(age_group) %>%
   summarise(no_registered = n(),
             no_screened = sum(screened_at_clinic),
@@ -220,7 +182,7 @@ board_update_sitrep <-   flatfile_clean %>%
                                      epi_status == "Previous treatment", na.rm = TRUE),
             
             no_hd_referrals = sum(hd_further_assessment),
-            no_hd_cases = sum(hd_confirmed),
+            # no_hd_cases = sum(hd_confirmed),
             no_hd_prevention = sum(hd_prev_given),
             
             no_diabetes = sum(dm_a1c_or_hx, na.rm = TRUE),
@@ -238,7 +200,7 @@ board_update_sitrep <-   flatfile_clean %>%
          pct_screened_ltbi = no_ltbi / no_screened,
          pct_ltbi_tx_complete = no_ltbi_complete/no_ltbi,
          
-         hd_cases_100k = round(no_hd_cases/pop_2010*100000,1),
+         # hd_cases_100k = round(no_hd_cases/pop_2010*100000,1),
          
          #8154 people screened 18+
          pct_screened_diabetes = no_diabetes / 8154
@@ -250,7 +212,9 @@ board_update_sitrep <-   flatfile_clean %>%
   select(age_group, no_registered, no_screened, pct_screened, 
          no_active_tb, active_tb_100k,no_tb_tx_complete,pct_tb_tx_complete, 
          no_ltbi, pct_screened_ltbi, no_ltbi_complete, pct_ltbi_tx_complete, 
-         no_hd_referrals, no_hd_cases, hd_cases_100k,no_hd_prevention, 
+         no_hd_referrals, 
+         # no_hd_cases, hd_cases_100k,
+         no_hd_prevention, 
          no_diabetes, pct_screened_diabetes, no_new_diabetes) %>%
   t() %>%
   as.data.frame() %>%
@@ -260,8 +224,7 @@ board_update_sitrep <-   flatfile_clean %>%
 
 ###FOR HEALTH SUMMIT
 
-#load in clean flatfile
-flatfile_clean %>%
+tbfc_analysis %>%
   mutate(is_12_to_17 = case_when(age >= 12 & age <= 17 ~ 1,
                                  .default = 0)) %>%
   group_by(is_12_to_17) %>%
@@ -271,7 +234,6 @@ flatfile_clean %>%
             no_active_tb = sum(active_tb_tx),
             
             no_ltbi = sum(ltbi_diagnosis),
-            no_ltbi_recommended = sum(ltbi_tx_indicated),
             no_ltbi_started = sum(ltbi_tx_started),
             
             no_hd_referrals = sum(hd_further_assessment),
@@ -282,12 +244,8 @@ flatfile_clean %>%
   ) %>%
   adorn_totals()
 
-### Using TBFC analysis flatfile
-
 tbfc_analysis %>% 
   tabyl(ltbi_diagnosis)
-
-
 
 board_update_sitrep <-   tbfc_analysis %>%
   group_by(age_group) %>%
@@ -304,7 +262,6 @@ board_update_sitrep <-   tbfc_analysis %>%
             
             no_hd_referrals = sum(hd_further_assessment),
             # no_hd_cases = sum(hd_confirmed),
-            no_hd_cases = 0,
             ##
             no_hd_prevention = sum(hd_prev_given),
             
@@ -323,7 +280,7 @@ board_update_sitrep <-   tbfc_analysis %>%
          pct_screened_ltbi = no_ltbi / no_screened,
          pct_ltbi_tx_complete = no_ltbi_complete/no_ltbi,
          
-         hd_cases_100k = round(no_hd_cases/pop_2010*100000,1),
+         # hd_cases_100k = round(no_hd_cases/pop_2010*100000,1),
          
          #8154 people screened 18+
          pct_screened_diabetes = no_diabetes / 8154
@@ -335,7 +292,9 @@ board_update_sitrep <-   tbfc_analysis %>%
   select(age_group, no_registered, no_screened, pct_screened, 
          no_active_tb, active_tb_100k,no_tb_tx_complete,pct_tb_tx_complete, 
          no_ltbi, pct_screened_ltbi, no_ltbi_complete, pct_ltbi_tx_complete, 
-         no_hd_referrals, no_hd_cases, hd_cases_100k,no_hd_prevention, 
+         no_hd_referrals, 
+         # no_hd_cases, hd_cases_100k,
+         no_hd_prevention, 
          no_diabetes, pct_screened_diabetes, no_new_diabetes) %>%
   t() %>%
   as.data.frame() %>%
