@@ -11,6 +11,7 @@ library(vtable) #allows sumtable
 library(janitor) #allows tabyl & cleaning names
 library(scales) #percent
 library(table1) #make table 1111
+library(naniar)
 
 
 
@@ -73,14 +74,17 @@ screened <- read_excel("Data/tbfc_analysis_dataset.xlsx",
                             .default = region)
   )
 
-table1(~ age + factor(sex) + factor(region) + bmi+ factor(current_smoker) + factor(prior_tb) +
-         factor(known_tb_exposure) + factor(al_one_symptom) + factor(abnormal_xray),
+#table of demographic characteristics for TBFC
+##TABLE 1
+table1(~ age + factor(sex) + factor(region) + bmi+ factor(current_smoker) + factor(known_tb_exposure) +
+         factor(prior_tb) + factor(al_one_symptom) + factor(abnormal_xray),
        render.continuous = render.NEW,
        render.categorical = \(x)  c("", sapply(stats.apply.rounding(stats.default(x)), 
                                                function(y) with(y,sprintf("%s (%s%%)", prettyNum(FREQ, big.mark=","), PCT)))), 
        overall=c(left="Total"),
        data=screened)
 
+#tst result by tb classification
 table1(~ factor(tst_result_10) + factor(hd_prev_given) + factor(ltbi_tx_started)
        | tb_classification, 
        render.categorical = \(x)  c("", sapply(stats.apply.rounding(stats.default(x)), 
@@ -88,12 +92,14 @@ table1(~ factor(tst_result_10) + factor(hd_prev_given) + factor(ltbi_tx_started)
        data=screened,
        overall=c(left="Total"))
 
+#bmi and a1c by tb classification
 table1(~ factor(bmi_cat) + a1c
        | tb_classification, 
        data=screened %>% filter(age >= 18),
        overall=c(left="Total"))
 
 ##LTBI FACTORS
+#associated factors with an LTBI diagnosis
 table1(~ factor(tst_result_10) + factor(known_tb_exposure) + factor(prior_tb) + 
          factor(hd_prev_given)
          + factor(bmi_cat) + a1c
@@ -102,33 +108,12 @@ table1(~ factor(tst_result_10) + factor(known_tb_exposure) + factor(prior_tb) +
        overall=F, 
        extra.col=list(`P-value`=pvalue))
 
+#examine missing pattern for a1c
 gg_miss_var(screened %>% select(a1c), show_pct = TRUE)
 
-screened %>% filter(active_tb_tx == 1 & ltbi_diagnosis == 1) %>% 
-  select(registration_no, last_name, first_name, date_of_birth,
-         notes_case_conference,notes,treatment_status,treatment_stop_reason,
-         epi_status, tb_outcome, tb_classification) %>%
-  View()
-
-sumtable(screened, digits=3)
-
-screened %>% 
-  filter(is.not.na(tst_result_10)) %>%
-  tabyl(tst_result_10,sex) %>%
-  adorn_percentages('col')
-
-screened %>%
-  filter(tst_read_yn == "Read" & is.na(tst_result)) %>%
-  select(-c(first_name,last_name,date_of_birth))
-
-
+#count of pre-diabetes with a1c > 5.4 and <6.5
 screened %>%
   filter(is.not.na(a1c)) %>%
   summarise(
     no_diabetes = sum(a1c<6.5 & a1c>5.4)
   )
-    
-
-screened %>%
-  filter(ltbi_diagnosis ==1) %>%
-  tabyl(doses_completed)
