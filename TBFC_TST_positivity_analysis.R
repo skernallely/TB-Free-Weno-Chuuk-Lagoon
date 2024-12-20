@@ -1,94 +1,27 @@
 ## TB-Free Chuuk R code
-## TST Positivity
+## TST Positivity rate calculations by age group, sex and geographic location
 
 #PACKAGES
-library(tidyverse) #pipes, scales, lubridate, stringr
+library(tidyverse) #pipes
+library(scales) #percents for graphs
 library(readxl) #excel load-in
 library(janitor) #allows tabyl & cleaning names
 library(ggplot2) #make graphs
 library(ggpubr) #special aggregate of plots
 library(ggthemes) #makes prettier graphs
 library(gridExtra) #tiled grid of plots
+library(gtsummary) #allows summary tabyl and p-value
 
 #formulas
 `%notin%` <- Negate(`%in%`)
 is.not.na <- function(x) !is.na(x)
 
-#standards
-
-lagoon_region <- tribble(
-  ~municipality, ~region,
-  "WENO", "NORTHERN NAMONEAS",
-  # "FONO", "NORTHERN NAMONEAS",
-  # "PIIS-PANEU", "NORTHERN NAMONEAS",
-  
-  "PAATA","FAICHUUK",
-  "ONEI","FAICHUUK",
-  "TOL","FAICHUUK",
-  "POLLE","FAICHUUK",
-  "UDOT","FAICHUUK",
-  # "FANAPANGES", "FAICHUUK",
-  # "ROMANUM", "FAICHUUK",
-  # "EOT", "FAICHUUK",
-  
-  "FEFEN","SOUTHERN NAMONEAS", 
-  "UMAN", "SOUTHERN NAMONEAS", 
-  "TONOAS","SOUTHERN NAMONEAS",
-  # "PAREM", "SOUTHERN NAMONEAS",
-  # "SIIS", "SOUTHERN NAMONEAS",
-
-  # "FANANU", "NORTHWEST",
-  # "HOUK", "NORTHWEST",
-  # "MAKUR", "NORTHWEST",
-  "MURILLO", "NORTHWEST",
-  # "NOMWIN", "NORTHWEST",
-  # "ONOUN", "NORTHWEST",
-  # "ONO", "NORTHWEST",
-  # "PIHERARH", "NORTHWEST",
-  # "POLLAP", "NORTHWEST",
-  # "POLOWAT", "NORTHWEST",
-  "RUO", "NORTHWEST",
-  # "TAMATAM", "NORTHWEST",
-  # "UNANU", "NORTHWEST",
-# 
-#   "ETTAL", "MORTLOCKS",
-#   "KUTTU", "MORTLOCKS",
-  "LEKINIOCH", "MORTLOCKS",
-  # "LOSAP", "MORTLOCKS",
-  # "MOCH", "MORTLOCKS",
-  # "NAMA", "MORTLOCKS",
-  # "NAMOLUK", "MORTLOCKS",
-  "ONEOP", "MORTLOCKS",
-  # "PIIS-EMWAR", "MORTLOCKS",
-  "SATOWAN", "MORTLOCKS",
-  # "TA", "MORTLOCKS"
-)
-
-#datasets
-#subset of patients who had a tst placed
-tst_dataset <- read_excel("Data/tbfc_analysis_dataset.xlsx",
-                           guess_max = 20000, col_names = TRUE) %>%
-  mutate(age_group_new = case_when(age_group == "5-9" | age_group == "10-19" ~ "5-19",
-                                   .default = age_group),
-         age_group = factor(age_group_new, 
-                            levels=c("5-19","20-39","40-59","60+")),
-         municipality = str_to_upper(municipality),
-         village = str_to_upper(village),
-         village = if_else(grepl("KUCHUWA",village), "KUCHUWA",
-                           if_else(grepl("NANTAKU",village), "NEPUKOS",
-                                   village)
-                           ),
-         full_village_name = paste(municipality,village)
-  ) %>%
-  filter(tst_read_yn != "No TST")
-
 ###FUNCTIONS
 
 ##make TST positivity graphs
-
-make_tst_pos_graphs <- function(data) {
+make_tst_pos_graphs <- function(data, fill) {
   ggplot(data = data, 
-         aes(x=age_group, y=pct, fill=tst_result_10)) +
+         aes(x=age_group, y=pct, fill = {{fill}})) +
     geom_bar(stat="identity",position = position_stack(reverse = FALSE)) +
     labs(
       y="% of TSTs read",
@@ -97,6 +30,7 @@ make_tst_pos_graphs <- function(data) {
     theme(panel.background = element_blank(), 
           panel.border = element_blank(),
           legend.position="bottom",
+          legend.background = element_blank(),
           legend.title = element_blank(),
           plot.margin = unit(c(1,2,1,2), "cm")) +# turn off minor 
     scale_fill_tableau(palette = "Superfishel Stone") +
@@ -104,24 +38,138 @@ make_tst_pos_graphs <- function(data) {
     scale_y_continuous(labels = percent) # add pct
 }
 
-###
-#TST POSITIVITY
-###
+#datasets
+#subset of patients who had a tst placed
+tst_dataset <- read_excel("Data/tbfc_analysis_dataset.xlsx",
+                           guess_max = 20000, col_names = TRUE) %>%
+  mutate(age_group_new = case_when(age_group == "5-9" | age_group == "10-19" ~ "5-19",
+                                   .default = age_group),
+         age_group = factor(age_group_new, 
+                            levels=c("0-4","5-19","20-39","40-59","60+")),
+         municipality = str_to_upper(municipality),
+         village = str_to_upper(village),
+         village = if_else(grepl("KUCHUWA",village), "KUCHUWA",
+                           if_else(grepl("NANTAKU",village), "NEPUKOS",
+                                   village)
+                           ),
+         full_village_name = paste(municipality,village)
+  ) %>%
+  filter(tst_read_yn != "No TST") %>%
+  mutate(region = case_when(region %in% c("MORT",
+                                          "NW") ~ "NORTHERN NAMONEAS",
+                            .default = region))
 
+#------------------------------
 
+#TST POSITIVITY COUNTS and RATES
 
-#tst positivity for those 5+
+#number of people with TSTs placed
+# tst_dataset %>%
+#   count()
+
+#number of people with TST results
+tst_dataset %>%
+  count(is.not.na(tst_result))
+
+#number of people with TST positive >=10mm
+tst_dataset %>%
+  filter(is.not.na(tst_result)) %>%
+  tabyl(tst_result_10)
+
+#tst positivity by age group
+tst_dataset %>%
+  filter(is.not.na(tst_result_10)) %>%
+  tabyl(age_group, tst_result_10) %>%
+  adorn_totals() %>%
+  adorn_percentages() %>%
+  pivot_longer(cols=2:3, names_to="tst_result_10", values_to = "pct") %>%
+  filter(tst_result_10 != "<10 mm TST" &
+           age_group != "0-4" & is.not.na(age_group))
+
+#tst positivity by sex
+tst_dataset %>%
+  filter(is.not.na(tst_result_10)) %>%
+  tbl_summary(by = sex, include = c(tst_result_10),
+              digits = ~ 1) %>%
+  add_p()
+
+#tst positivity by municipality
+tst_dataset %>%
+  filter(is.not.na(tst_result_10)) %>%
+  tabyl(municipality, tst_result_10) %>%
+  adorn_totals(c('row','col')) %>%
+  filter(Total > 30) %>%
+  adorn_percentages() %>%
+  select(-Total) %>%
+  pivot_longer(cols=2:3, names_to="tst_result_10", values_to = "pct") %>%
+  filter(tst_result_10 != "<10 mm TST")
+
+#-----------------------
+
+##GRAPHS and FIGURES
+
+#OVERALL TST POS RATE GRAPH
+#tst positivity by age group for those 5+
 tst_pos_rate <- tst_dataset %>%
   filter(is.not.na(tst_result_10)) %>%
   tabyl(age_group, tst_result_10) %>%
   adorn_percentages() %>%
   pivot_longer(cols=2:3, names_to="tst_result_10", values_to = "pct") %>%
-  filter(age_group != "0-4")
+  filter(age_group != "0-4") %>%
+  filter(tst_result_10 != "<10 mm TST")
 
-#OVERALL TST POS RATE
-tst_pos_age_g <- make_tst_pos_graphs(tst_pos_rate)
+##basic TST positivity plot
+basic_age_pos <- make_tst_pos_graphs(tst_pos_rate, tst_result_10) +
+         theme(legend.position="none") + 
+         coord_cartesian(ylim = c(0, .5)) +
+         scale_y_continuous(name="% of TSTs read >= 10 mm",
+                            labels = percent)
 
-#TST READ RATE FOR LAGOON
+
+width = 1280, height = 675, units = "px", scale = 1.5, dpi=300)
+
+#tst positivity by age group and sex
+tst_pos_age_sex <- tst_dataset %>%
+  filter(is.not.na(tst_result_10) & age_group != "0-4" & is.not.na(age_group)) %>%
+  group_by(sex,age_group) %>%
+  mutate(sex = case_when(sex == 'F' ~ 'Female',
+                         sex == 'M' ~ 'Male',
+                         .default = sex)
+         ) %>%
+  summarise(num_tst = n(), 
+            tst_pos = sum(tst_result_10 == ">= 10 mm TST"),
+            pct = tst_pos / num_tst)
+
+##make graph by sex
+basic_sex_pos <- make_tst_pos_graphs(tst_pos_age_sex,"none") +
+  facet_wrap('sex') +
+  theme(legend.position="none") + 
+  coord_cartesian(ylim = c(0, 0.5)) +
+  scale_y_continuous(name="% of TSTs read >= 10 mm",
+                     labels = percent)
+
+#make graph stack for overall positivity by age and sex
+ggsave(plot=ggarrange(basic_age_pos,
+                      basic_sex_pos, 
+                      heights = c(1,1),
+                      font.label= list("plain","black",size=12),
+                      common.legend = TRUE,
+                      label.x = 0,
+                      legend = "none",
+                      nrow = 2),
+       "Figures/Figure 2 - TST positivity rate by age group and sex.png",
+       width = 1080, height = 1280, units = "px", scale = 2, dpi=300)
+
+
+
+#---------------------------
+
+##ADDITIONAL EXPLORATORY GRAPHS
+
+#make graph for tst positivity by age group
+tst_pos_age_g <- make_tst_pos_graphs(tst_pos_rate,tst_result_10)
+
+#TST POS RATE FOR LAGOON
 tst_pos_rate_lagoon <- tst_dataset %>%
   mutate(municipality = case_when(municipality %notin% lagoon_region$municipality ~ "WENO",
                             .default=municipality)) %>%
@@ -136,7 +184,7 @@ tst_pos_rate_lagoon <- tst_dataset %>%
   filter(age_group != "0-4" & municipality %in% lagoon_region$municipality)
 
 #GRAPH FOR EACH MUNI
-tst_pos_age_lagoon_g <- make_tst_pos_graphs(tst_pos_rate_lagoon) +
+tst_pos_age_lagoon_g <- make_tst_pos_graphs(tst_pos_rate_lagoon,tst_result_10) +
   facet_wrap( ~ municipality, scales='free') +
   coord_cartesian(ylim = c(0, .6))  +
   theme(text = element_text(family = 'Open Sans'),
@@ -186,7 +234,8 @@ tst_pos_rate_village <- tst_dataset %>%
 
 #GRAPH FOR EACH MUNI
 tst_pos_rate_village_weno <- make_tst_pos_graphs(tst_pos_rate_village %>%
-                                                   filter(region == "WENO")) +
+                                                   filter(region == "WENO"),
+                                                 tst_result_10) +
   facet_wrap( ~ full_village_name, scales='free') +
   labs(
     title = "LTBI Treatment Cascade for TB-Free Chuuk, 2023",
@@ -194,7 +243,8 @@ tst_pos_rate_village_weno <- make_tst_pos_graphs(tst_pos_rate_village %>%
   )
 
 tst_pos_rate_village_faichuuk <- make_tst_pos_graphs(tst_pos_rate_village %>%
-                                                   filter(region == "FAICHUUK")) +
+                                                   filter(region == "FAICHUUK"),
+                                                   tst_result_10) +
   facet_wrap( ~ full_village_name, scales='free') +
   labs(
     subtitle = "Faichuuk"
@@ -202,14 +252,16 @@ tst_pos_rate_village_faichuuk <- make_tst_pos_graphs(tst_pos_rate_village %>%
 
 tst_pos_rate_village_uman_fefen <- make_tst_pos_graphs(tst_pos_rate_village %>%
                                                        filter(region == "SOUTHERN NAMONEAS" &
-                                                                municipality != "TONOAS")) +
+                                                                municipality != "TONOAS"),
+                                                       tst_result_10) +
   facet_wrap( ~ full_village_name, scales='free')  +
   labs(
     subtitle = "Uman & Fefen"
   )
 
 tst_pos_rate_village_tonoas <- make_tst_pos_graphs(tst_pos_rate_village %>%
-                                                         filter(municipality == "TONOAS")) +
+                                                         filter(municipality == "TONOAS"),
+                                                   tst_result_10) +
   facet_wrap( ~ full_village_name, scales='free') +
   labs(
     subtitle = "Tonoas",
@@ -229,91 +281,6 @@ ggsave(plot=ggarrange(tst_pos_rate_village_weno,
        "Figures/TST positivity rate by village and age group.jpg",
        width = 1280, height = 3600, units = "px", scale = 2.5, dpi=300)
 
-
-
-
-
-
-
-###
-##BOARD MEETING GRAPH
-
-##TST READ
-ggsave(plot = ggplot(data = tst_read_rate, 
-       aes(x=age_group, y=pct, fill=tst_read_yn)) +
-  geom_bar(stat="identity",position = position_stack(reverse = FALSE)) +
-  labs(y="% of people with TSTs placed",
-       x="Age Group",
-       title="People with TSTs placed by screening status and age group",
-       subtitle="TB-Free Chuuk 2023") +  # title and caption
-  theme_classic() +
-  theme(text = element_text(family = 'Open Sans'),
-        plot.background = element_rect(fill = "#f3f6f8"), 
-        panel.background = element_rect(fill = "#f3f6f8", colour="#f3f6f8"), 
-        panel.border = element_blank(),
-        legend.position="right",
-        legend.background = element_rect(fill = "#f3f6f8"),
-        legend.title = element_blank(),
-        plot.margin = unit(c(.2,.2,.2,.2), "cm")) +# turn off minor 
-  scale_fill_brewer(palette="Paired") +
-  scale_y_continuous(labels = percent)
-  # geom_text(aes(label = paste(round(pct*100,1), "%")), 
-  #           position = position_stack(vjust = 0.5,reverse = FALSE))
-  ,
-  "Figures/TST read rate by age group.png",
-  width = 1280, height = 675, units = "px", scale = 1.5, dpi=300)
-
-##TST POS
-ggsave(plot = ggplot(data = tst_read_rate, 
-                     aes(x=age_group, y=pct, fill=tst_read_yn)) +
-         geom_bar(stat="identity",position = position_stack(reverse = FALSE)) +
-         labs(y="% of people with TSTs placed",
-              x="Age Group",
-              title="People with TSTs placed by screening status and age group",
-              subtitle="TB-Free Chuuk 2023") +  # title and caption
-         theme_classic() +
-         theme(text = element_text(family = 'Open Sans'),
-               plot.background = element_rect(fill = "#f3f6f8"), 
-               panel.background = element_rect(fill = "#f3f6f8", colour="#f3f6f8"), 
-               panel.border = element_blank(),
-               legend.position="right",
-               legend.background = element_rect(fill = "#f3f6f8"),
-               legend.title = element_blank(),
-               plot.margin = unit(c(.2,.2,.2,.2), "cm")) +# turn off minor 
-         scale_fill_brewer(palette="Paired") +
-         scale_y_continuous(labels = percent)
-       # geom_text(aes(label = paste(round(pct*100,1), "%")), 
-       #           position = position_stack(vjust = 0.5,reverse = FALSE))
-       ,
-       "Figures/TST read rate by age group.png",
-       width = 1280, height = 675, units = "px", scale = 1.5, dpi=300)
-
-ggsave(plot = ggplot(data = tst_pos_rate, 
-       aes(x=age_group, y=pct, fill=tst_result_10)) +
-  geom_bar(stat="identity",position = position_stack(reverse = FALSE)) +
-  labs(
-    y="% of TSTs read",
-    x="Age Group",
-    title="TST positivity by age for patients 5 and older",
-    subtitle="TB-Free Chuuk 2023") +  # title and caption) +  # title and caption
-  theme_classic() +
-  theme(text = element_text(family = 'Open Sans'),
-        plot.background = element_rect(fill = "#f3f6f8"), 
-        panel.background = element_rect(fill = "#f3f6f8", colour="#f3f6f8"), 
-        panel.border = element_blank(),
-        legend.position="right",
-        legend.background = element_rect(fill = "#f3f6f8"),
-        legend.title = element_blank(),
-        plot.margin = unit(c(.2,.2,.2,.2), "cm")) +# turn off minor 
-  scale_fill_tableau(palette = "Superfishel Stone") +
-  coord_cartesian(ylim = c(0, 1)) +
-  scale_y_continuous(labels = percent),
-  "Figures/TST pos rate by age group.png",
-  width = 1280, height = 675, units = "px", scale = 1.5, dpi=300)
-
-
-
-
 #### TST POS FOR REGION
 tst_pos_rate_region <- tst_dataset %>%
   filter(tst_read_yn %in% c("Read") & is.not.na(tst_result_10)) %>%
@@ -329,7 +296,7 @@ tst_pos_rate_region <- tst_dataset %>%
   filter(age_group != "0-4" & region %in% lagoon_region$region)
 
 #GRAPH FOR EACH REGION
-make_tst_pos_graphs(tst_pos_rate_region %>% filter(region == "FAICHUUK")) +
+make_tst_pos_graphs(tst_pos_rate_region %>% filter(region == "FAICHUUK"),tst_result_10) +
   labs(title="TST positivity rate by age group, Faichuuk") +
   theme(text = element_text(family = 'Open Sans'),
         plot.background = element_rect(fill = "#f3f6f8"), 
