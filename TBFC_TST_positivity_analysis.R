@@ -125,9 +125,6 @@ basic_age_pos <- make_tst_pos_graphs(tst_pos_rate, tst_result_10) +
          scale_y_continuous(name="% of TSTs read >= 10 mm",
                             labels = percent)
 
-
-width = 1280, height = 675, units = "px", scale = 1.5, dpi=300)
-
 #tst positivity by age group and sex
 tst_pos_age_sex <- tst_dataset %>%
   filter(is.not.na(tst_result_10) & age_group != "0-4" & is.not.na(age_group)) %>%
