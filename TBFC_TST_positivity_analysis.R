@@ -66,26 +66,9 @@ lagoon_region <- tribble(
 
 #datasets
 #subset of patients who had a tst placed
-tst_dataset <- read_excel("Data/flatfile_clean.xlsx",
+tst_dataset <- read_excel("Data/tbfc_analysis_dataset.xlsx",
                            guess_max = 20000, col_names = TRUE) %>%
-  
-  select("registration_no", "age", "age_group", "sex", "municipality", "village",
-         "screening_site", "date_screening", "date_of_visit1", "tst_date_read", 
-         "tst_result", "tst_interpretation", "tb_disease_exposure", "treated_tb_ltbi",
-         "current_tb_symptoms_none", "current_tb_symptoms_any_duration",
-         "weight", "height", "result_hd_assessment", "xray_indicated",
-         "active_tb", "ltbi_actions", "tb_sputum", "a1c", "history_diabetes",
-         "medications_for_diabetes", "smoking_history", "hd_prevention",
-         "hd_prevention_text", "treatment_recommended", "treatment_started",
-         "medication_order_full", "outcome_case_conference", 
-         "actions_not_active_tb", "notes_case_conference", "tst_read",
-         "tst_place_visit","tst_result_10","tst_pos","tst_neg","tst_read_elapse",
-         "tst_read_cat", "tst_read_yn") %>%
-  mutate(municipality = case_when(municipality %in% c("MURILLO","RUO",
-                                                      "ONEOP","SATOWAN",
-                                                      "LEKINIOCH") ~ "WENO",
-                                  .default = municipality),
-         age_group_new = case_when(age_group == "5-9" | age_group == "10-19" ~ "5-19",
+  mutate(age_group_new = case_when(age_group == "5-9" | age_group == "10-19" ~ "5-19",
                                    .default = age_group),
          age_group = factor(age_group_new, 
                             levels=c("5-19","20-39","40-59","60+")),
@@ -97,29 +80,9 @@ tst_dataset <- read_excel("Data/flatfile_clean.xlsx",
                            ),
          full_village_name = paste(municipality,village)
   ) %>%
-  merge(lagoon_region, by="municipality")
-
+  filter(tst_read_yn != "No TST")
 
 ###FUNCTIONS
-
-##make TST read rate graphs
-
-make_tst_read_graphs <- function(data) {
-  ggplot(data = data, 
-         aes(x=age_group, y=pct, fill=tst_read_yn)) +
-    geom_bar(stat="identity",position = position_stack(reverse = FALSE)) +
-    labs(y="% of people with TSTs placed",
-         x="Age Group",
-         caption = "Age group bins are not of equal size; exercise caution when drawing conclusions") +  # title and caption
-    theme_classic() +
-    theme(panel.background = element_blank(), 
-          panel.border = element_blank(),
-          legend.position="bottom",
-          legend.title = element_blank(),
-          plot.margin = unit(c(1,2,1,2), "cm")) +# turn off minor 
-    scale_fill_brewer(palette="Paired") +
-    scale_y_continuous(labels = percent) # add pct
-}
 
 ##make TST positivity graphs
 
@@ -142,53 +105,10 @@ make_tst_pos_graphs <- function(data) {
 }
 
 ###
-#TST READ RATE
-###
-
-#tst read data for those 5+
-tst_read_rate <- tst_dataset %>%
-  filter(tst_read_yn %in% c("Read","Not read")) %>%
-  tabyl(age_group, tst_read_yn) %>%
-  adorn_percentages() %>%
-  pivot_longer(cols=2:3, names_to="tst_read_yn", values_to = "pct") %>%
-  filter(age_group != "0-4")
-  
-#OVERALL TST READ RATE
-tst_read_age_g <- make_tst_read_graphs(tst_read_rate)
-
-#TST READ RATE FOR LAGOON
-tst_read_rate_lagoon <- tst_dataset %>%
-  filter(tst_read_yn %in% c("Read","Not read")) %>%
-  group_by(age_group, region, tst_read_yn) %>%
-  summarise(count=n()) %>%
-  filter(is.not.na(age_group)) %>%
-  ungroup() %>%
-  group_by(age_group, region) %>%
-  mutate(pct =  count/sum(count)) %>% 
-  ungroup() %>%
-  filter(age_group != "0-4")
-
-#GRAPH FOR EACH MUNI
-tst_read_age_lagoon_g <- make_tst_read_graphs(tst_read_rate_lagoon) +
-  facet_wrap( ~ region, scales='free')
-
-ggsave(plot=ggarrange(tst_read_age_g,
-                      tst_read_age_lagoon_g, 
-                      heights = c(1,2),
-                      labels= c("TST read rate by municipality and age for patients 5 and older",
-                                "By Island"),
-                      font.label= list("plain","black",size=12),
-                      common.legend = TRUE,
-                      label.x = 0,
-                      legend = "bottom",
-                      nrow = 2),
-       "Figures/TST read rate by lagoon island and age group.jpg",
-       width = 1280, height = 1280, units = "px", scale = 2.5, dpi=300)
-
-
-###
 #TST POSITIVITY
 ###
+
+
 
 #tst positivity for those 5+
 tst_pos_rate <- tst_dataset %>%
@@ -251,25 +171,7 @@ ggsave(plot=tst_pos_age_lagoon_g,
 ##BY VILLAGE
 ###
 
-
-#TST READ RATE FOR VILLAGE
-tst_read_rate_village <- tst_dataset %>%
-  filter(tst_read_yn %in% c("Read","Not read")) %>%
-  group_by(age_group, full_village_name, tst_read_yn) %>%
-  summarise(count=n()) %>%
-  filter(is.not.na(age_group)) %>%
-  ungroup() %>%
-  group_by(age_group, full_village_name) %>%
-  mutate(pct =  count/sum(count),
-         municipality = gsub( " .*$", "", full_village_name)) %>% 
-  ungroup() %>%
-  filter(age_group != "0-4" & full_village_name %in% villages_screened_30_plus) %>%
-  merge(lagoon_region, by="municipality")
-
-#GRAPH FOR EACH MUNI
-tst_read_rate_village_g <- make_tst_read_graphs(tst_read_rate_village)
-
-#TST READ RATE FOR VILLAGE
+#TST POS RATE FOR VILLAGE
 tst_pos_rate_village <- tst_dataset %>%
   filter(tst_read_yn %in% c("Read") & is.not.na(tst_result_10)) %>%
   group_by(age_group, full_village_name, municipality, tst_result_10) %>%
@@ -426,7 +328,7 @@ tst_pos_rate_region <- tst_dataset %>%
   ungroup() %>%
   filter(age_group != "0-4" & region %in% lagoon_region$region)
 
-#GRAPH FOR EACH MUNI
+#GRAPH FOR EACH REGION
 make_tst_pos_graphs(tst_pos_rate_region %>% filter(region == "FAICHUUK")) +
   labs(title="TST positivity rate by age group, Faichuuk") +
   theme(text = element_text(family = 'Open Sans'),
