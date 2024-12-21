@@ -12,24 +12,24 @@ First paragraph from [TBFC_descriptive_analysis.R](https://github.com/skernallel
 Data from [TBFC_TST_positivity_analysis.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_TST_positivity_analysis.R)
 
 ### Treatment of Active Tuberculosis
-_To be updated_
+Data from [TBFC_active_tb.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_active_tb.R)
 
 ### Treatment of Latent Tuberculosis
-_To be updated_
+Data from [TBFC_treatment_cascades.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_treatment_cascades.R)
 
 ### Diabetes screening results
-_To be updated_
+Data from [TBFC_diabetes_analysis.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_diabetes_analysis.R)
 
 ### Hansen’s disease screening results
-_To be updated_
+Data from [TBFC_HD_analysis.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_HD_analysis.R)
 
 ## Figures
-1. Figure 1. Map of high incidence villages for tuberculosis and Hansen’s disease  identified and screened during TB-Free Active Case Finding activities, May–June 2023
-   - Made with GIS software
+1. Figure 1. Map of high incidence villages for tuberculosis and Hansen’s disease identified and screened during TB-Free active case finding activities, May–June 2023
+   - [TBFC_map_screening_sites.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_map_screening_sites.R) 
 3. Figure 2. TST positivity by age and sex for persons wth a TST result (n=11,073), TB-Free Chuuk, May 2023 to October 2023
    - [TBFC_TST_positivity_analysis.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_TST_positivity_analysis.R) 
 4. Figure 3. Latent TB infection treatment cascade, TB-Free Chuuk, 2023
-   - _To be updated_
+   - [TBFC_treatment_cascades.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_treatment_cascades.R)
 
 ## Tables 
 1. Table 1 from [TBFC_descriptive_analysis.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_descriptive_analysis.R)
