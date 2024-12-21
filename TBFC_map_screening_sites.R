@@ -8,6 +8,9 @@ library(tmaptools)
 library(tidyverse)
 library(readxl)
 
+#set WD
+setwd("~/PIHOA/TBFC/R Analysis/Weno_Chuuk_Lagoon")
+
 # Load the shapefile
 chuuk_lagoon_shapefile <- st_read("Map Files/5-08_Census_population/chk_census_population_2010.shp")
 
@@ -19,8 +22,11 @@ sites <- read_excel("Map Files/villages_lat_long.xlsx") %>%
 coordinates(sites) <- ~lon+lat
 
 # Create the map with the background shapefile
-tm_basemap("Esri.WorldStreetMap") +
+screening_map <- tm_basemap("Esri.WorldStreetMap") +
   tm_shape(chuuk_lagoon_shapefile)  +
   tm_polygons() +
   tm_shape(sites) +
   tm_dots(col = "blue", size = 0.1, popup.vars = "name")
+
+# Save the map
+tmap_save(screening_map,"Figures/Map_of_screening_sites.png")
