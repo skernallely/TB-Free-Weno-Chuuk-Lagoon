@@ -64,16 +64,16 @@ tst_dataset <- read_excel("Data/tbfc_analysis_dataset.xlsx",
 #TST POSITIVITY COUNTS and RATES
 
 #number of people with TSTs placed
-# tst_dataset %>%
-#   count()
+tst_dataset %>%
+  count()
 
 #number of people with TST results
 tst_dataset %>%
-  count(is.not.na(tst_result))
+  count(is.not.na(tst_result_10))
 
 #number of people with TST positive >=10mm
 tst_dataset %>%
-  filter(is.not.na(tst_result)) %>%
+  filter(is.not.na(tst_result_10)) %>%
   tabyl(tst_result_10)
 
 #tst positivity by age group
