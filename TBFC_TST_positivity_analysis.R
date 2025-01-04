@@ -145,6 +145,7 @@ basic_sex_pos <- make_tst_pos_graphs(tst_pos_age_sex,"none") +
   scale_y_continuous(name="% of TSTs read >= 10 mm",
                      labels = percent)
 
+
 #make graph stack for overall positivity by age and sex
 ggsave(plot=ggarrange(basic_age_pos,
                       basic_sex_pos, 
@@ -157,7 +158,28 @@ ggsave(plot=ggarrange(basic_age_pos,
        "Figures/Figure 2 - TST positivity rate by age group and sex.png",
        width = 1080, height = 1280, units = "px", scale = 2, dpi=300)
 
+##make graph by sex grouped
+grouped_sex_pos <- ggplot(data = tst_pos_age_sex, 
+                            aes(x=age_group, y=pct, fill = sex)) +
+  geom_bar(stat="identity",position = "dodge") +
+  theme_classic() +
+  theme(panel.background = element_blank(), 
+        panel.border = element_blank(),
+        legend.position="right",
+        legend.background = element_blank(),
+        plot.margin = unit(c(1,2,1,2), "cm"))  + # turn off minor 
+    labs(
+      x="Age group",
+      fill = "Sex") +  # title and caption
+  scale_color_discrete() +
+  coord_cartesian(ylim = c(0, 0.5)) +
+  scale_y_continuous(name="% of tuberculin skin tests read >= 10 mm",
+                     labels = percent)
 
+#Save grouped bar chart with positivity by age and sex
+ggsave(plot=grouped_sex_pos,
+       "Figures/Figure 2a - Grouped TST positivity rate by age and sex.png",
+       width = 1280, height = 720, units = "px", scale = 2, dpi=300)
 
 #---------------------------
 
