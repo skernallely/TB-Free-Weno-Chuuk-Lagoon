@@ -26,7 +26,7 @@ Data from [TBFC_HD_analysis.R](https://github.com/skernallely/TB-Free-Weno-Chuuk
 ## Figures
 1. Figure 1. Map of high incidence villages for tuberculosis and Hansen’s disease identified and screened during TB-Free active case finding activities, May–June 2023
    - [TBFC_map_screening_sites.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_map_screening_sites.R) 
-3. Figure 2. TST positivity by age and sex for persons wth a TST result (n=11,073), TB-Free Chuuk, May 2023 to October 2023
+3. Figure 2. TST positivity by age and sex for persons wth a TST result (n=11,093), TB-Free Chuuk, May 2023 to October 2023
    - [TBFC_TST_positivity_analysis.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_TST_positivity_analysis.R) 
 4. Figure 3. Latent TB infection treatment cascade, TB-Free Chuuk, 2023
    - [TBFC_treatment_cascades.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_treatment_cascades.R)
