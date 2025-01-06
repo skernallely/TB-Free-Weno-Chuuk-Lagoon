@@ -178,7 +178,7 @@ grouped_sex_pos <- ggplot(data = tst_pos_age_sex,
 
 #Save grouped bar chart with positivity by age and sex
 ggsave(plot=grouped_sex_pos,
-       "Figures/Figure 2a - Grouped TST positivity rate by age and sex.png",
+       "Figures/Figure 2 - Grouped TST positivity rate by age and sex.png",
        width = 1280, height = 720, units = "px", scale = 2, dpi=300)
 
 #---------------------------

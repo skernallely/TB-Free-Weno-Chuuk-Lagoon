@@ -88,7 +88,7 @@ screening_sites_w_cases <-
   )
 
 #future map file path
-map_file <- "Figures/Figure 1a - Map of screening sites with nine year case rate.png"
+map_file <- "Figures/Figure 1 - Map of screening sites with nine year case rate.png"
 
 #Save map of 
 ggsave(plot=screening_sites_w_cases,
