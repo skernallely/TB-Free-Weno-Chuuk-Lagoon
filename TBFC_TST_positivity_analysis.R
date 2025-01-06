@@ -159,19 +159,20 @@ ggsave(plot=ggarrange(basic_age_pos,
        width = 1080, height = 1280, units = "px", scale = 2, dpi=300)
 
 ##make graph by sex grouped
-grouped_sex_pos <- ggplot(data = tst_pos_age_sex, 
+grouped_sex_pos <-
+  ggplot(data = tst_pos_age_sex, 
                             aes(x=age_group, y=pct, fill = sex)) +
   geom_bar(stat="identity",position = "dodge") +
   theme_classic() +
   theme(panel.background = element_blank(), 
         panel.border = element_blank(),
-        legend.position="right",
+        legend.position="bottom",
         legend.background = element_blank(),
-        plot.margin = unit(c(1,2,1,2), "cm"))  + # turn off minor 
+        plot.margin = unit(c(0.1,0.1,0.1,0.1), "cm"))  + # turn off minor 
     labs(
       x="Age group (years)",
       fill = "Sex") +  # title and caption
-  scale_color_discrete() +
+  scale_fill_discrete() +
   coord_cartesian(ylim = c(0, 0.5)) +
   scale_y_continuous(name="% of tuberculin skin tests read >= 10 mm",
                      labels = percent)
