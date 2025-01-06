@@ -104,6 +104,21 @@ tst_dataset %>%
   pivot_longer(cols=2:3, names_to="tst_result_10", values_to = "pct") %>%
   filter(tst_result_10 != "<10 mm TST")
 
+
+##positivity by sex, age_group and island
+tst_dataset %>%
+  filter(is.not.na(tst_result_10) & age_group != "0-4" & is.not.na(age_group) &
+           municipality %in% toupper(island_labels$name)) %>%
+  group_by(sex,municipality,age_group) %>%
+  mutate(sex = case_when(sex == 'F' ~ 'Female',
+                         sex == 'M' ~ 'Male',
+                         .default = sex)
+  ) %>%
+  summarise(num_tst = n(), 
+            tst_pos = sum(tst_result_10 == ">= 10 mm TST"),
+            pct = tst_pos / num_tst) %>%
+  arrange(desc(pct))
+
 #-----------------------
 
 ##GRAPHS and FIGURES
@@ -390,3 +405,4 @@ ggsave(plot=ggplot(data = tst_pos_rate_region %>% filter(region == "SOUTHERN NAM
          scale_y_continuous(labels = percent),
        "Figures/TST pos rate by age group - SN.png",
        width = 1280, height = 675, units = "px", scale = 1.5, dpi=300)
+
