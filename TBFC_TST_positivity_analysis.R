@@ -169,7 +169,7 @@ grouped_sex_pos <- ggplot(data = tst_pos_age_sex,
         legend.background = element_blank(),
         plot.margin = unit(c(1,2,1,2), "cm"))  + # turn off minor 
     labs(
-      x="Age group",
+      x="Age group (years)",
       fill = "Sex") +  # title and caption
   scale_color_discrete() +
   coord_cartesian(ylim = c(0, 0.5)) +
