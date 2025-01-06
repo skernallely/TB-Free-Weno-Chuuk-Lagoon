@@ -28,7 +28,7 @@ Data from [TBFC_HD_analysis.R](https://github.com/skernallely/TB-Free-Weno-Chuuk
    - [TBFC_map_screening_sites.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_map_screening_sites.R) 
 2. Figure 2. TST positivity by age and sex for persons wth a TST result (n=11,093), TB-Free Chuuk, May–October 2023
    - [TBFC_TST_positivity_analysis.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_TST_positivity_analysis.R)
-3. Figure 3. Treatment outcomes by age group among people diagnosed with active TB from active case finding screening (n=184) after 20 months of follow-up, TB-Free Chuuk, May 2023–December 2024
+3. Figure 3. Treatment outcomes by age group among people diagnosed with TB disease from active case finding screening (n=184) after 20 months of follow-up, TB-Free Chuuk, May 2023–December 2024
    - [TBFC_active_tb.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_active_tb.R)
 4. Figure 4. Latent TB infection treatment cascade, TB-Free Chuuk, May–October 2023
    - [TBFC_treatment_cascades.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_treatment_cascades.R)
