@@ -47,10 +47,9 @@ lagoon_region <- tribble(
 cascade_order <- c("no_ltbi_diagnosis", "no_rec_ltbi",
                    "no_start_ltbi", "no_complete_ltbi")
 
-cascade_order_long <- c("Skin Test Read", 
+cascade_order_long <- c("Skin Test Read*", 
                         "Latent Tx Recommended", 
-                        "Treatment Started", "Treatment Completed")
-
+                        "Treatment Started", "Treatment Completed§")
 
 cascade_order_brostrom_spec <- c("no_tst_placed", "no_ltbi_diagnosis", "no_rec_ltbi",
                    "no_start_ltbi", "no_complete_ltbi")
@@ -214,15 +213,13 @@ cascade_dataset %>%
          ) %>%
   tabyl(alcohol_use)
 
-
+#-----------------------------------------------
 ##ORIGINAL CASCADE WITHOUT FIRST BAR OF TOTAL TESTED
-### OVERALL CHUUK LAGOON CASCADE
 
-#Weno and lagoon cascade
+### OVERALL CHUUK LAGOON CASCADE
+#Cascade data
 overall_cascade <- cascade_dataset %>%
   summarise(
-    #number of people per village that had a skin test placed
-    # no_tst_placed = sum(tst_read_yn == "Read" | tst_read_yn == "Not read"),
     #number of patients with an ltbi diagnosis def as having ltbi_treatment_id and not id as active in CC
     no_ltbi_diagnosis = sum(ltbi_diagnosis == 1),
     #number recommended ltbi using ltbi_treatment data
@@ -233,13 +230,6 @@ overall_cascade <- cascade_dataset %>%
     no_complete_ltbi = sum(ltbi_tx_completed == 1, na.rm=T),
     area = "All Chuuk Lagoon"
   ) %>%
-  # #merge with rate_estimates by age group dataset for all ages, total rates
-  # merge(rate_estimates_age %>% filter(age_group == "5+") %>% 
-  #         select(area, pop, est_ltbi_cases) %>% rename(no_estimated_pos=est_ltbi_cases), by="area") %>%
-  # #estimate no of tst placed on estimated ltbi cases using pct of village that had a skin test placed
-  # mutate(no_tst_placed_on_ltbi = round(no_estimated_pos*(total_tst_placed/pop))
-  # ) %>%
-  # select(-total_tst_placed,-pop, -no_estimated_pos) %>%
   #rearrange into long form for ggplot
   pivot_longer(cols=1:4, names_to="category", values_to = "count") %>%
   # group_by(area) %>%
@@ -251,9 +241,7 @@ overall_cascade <- cascade_dataset %>%
   #all categories should exist in the list or an error will result
   arrange(category)
 
-
-
-#OVERALL TST READ RATE
+#OVERALL CASCADE GRAPH
 all_cascade_g <- overall_cascade %>%
   ggplot(aes(x=category, y=count)) +
   geom_bar(stat="identity",position = position_stack(reverse = FALSE)) +
@@ -262,9 +250,7 @@ all_cascade_g <- overall_cascade %>%
     #subtitle = "Age >= 5 y.o., All Chuuk Lagoon",
     x = "",
     y="No. of people"
-    # caption = 
-    #    "Total TST Positive (est.) = Hawaii % TST pos * Chuuk 2010 population 
-    #Skin Test Placed (est.) = Total TST Pos (est.) * Percent of 2010 pop that had TSTs placed
+    # caption = "
     #Treatment Completed = Number completed 11+ doses of 3HP"
   ) +  # title and caption
   theme_classic() +
@@ -280,15 +266,11 @@ all_cascade_g <- overall_cascade %>%
   geom_label(aes(label = paste(label_comma()(count), scales::percent(percent),sep="\n")), 
              vjust = 1, nudge_y = .5)
 
-
-
-#Weno and lagoon cascade
+#Weno and lagoon cascade data
 wl_cascade <- cascade_dataset %>%
   group_by(area) %>%
   filter(is.not.na(area)) %>%
   summarise(
-    #estimate pct of village that had a skin test placed
-    # no_tst_placed = sum(tst_place_visit == "Y"),
     #number of patients with an ltbi diagnosis def as having ltbi_treatment_id and not id as active in CC
     no_ltbi_diagnosis = sum(ltbi_diagnosis == 1),
     #number recommended ltbi using ltbi_treatment data
@@ -298,13 +280,6 @@ wl_cascade <- cascade_dataset %>%
     #defined as having completed tx status in dpot sheet or completed 11+ doses
     no_complete_ltbi = sum(ltbi_tx_completed == 1, na.rm=T)
   ) %>%
-  #merge with rate_estimates by age group dataset for all ages, total rates
-  # merge(rate_estimates_age %>% filter(age_group == "5+") %>% 
-  #         select(area, pop, est_ltbi_cases) %>% rename(no_estimated_pos=est_ltbi_cases), by="area") %>%
-  # #estimate no of tst placed on estimated ltbi cases using pct of village that had a skin test placed
-  # mutate(no_tst_placed_on_ltbi = round(no_estimated_pos*(total_tst_placed/pop))
-  #        ) %>%
-  # select(-total_tst_placed,-pop, -no_estimated_pos) %>%
   #rearrange into long form for ggplot
   pivot_longer(cols=2:5, names_to="category", values_to = "count") %>%
   group_by(area) %>%
@@ -316,9 +291,7 @@ wl_cascade <- cascade_dataset %>%
   #all categories should exist in the list or an error will result
   arrange(category)
 
-
-
-#OVERALL TST READ RATE
+#WENO AND LAGOON CASCADE GRAPH
 wl_cascade_g <- wl_cascade %>%
   ggplot(aes(x=category, y=count)) +
   geom_bar(stat="identity",position = position_stack(reverse = FALSE)) +
@@ -328,8 +301,6 @@ wl_cascade_g <- wl_cascade %>%
     x = "",
     y="No. of people",
     caption = 
-      # "Total TST Positive (est.) = Hawaii % TST pos * Chuuk 2010 population 
-      # Skin Test Placed (est.) = Total TST Pos (est.) * Percent of 2010 pop that had TSTs placed
       "Treatment Completed = Received 11 or more doses of 3HP within 16 weeks") +  # title and caption
   theme_classic() +
   theme(panel.background = element_blank(), 
@@ -344,7 +315,7 @@ wl_cascade_g <- wl_cascade %>%
   geom_label(aes(label = paste(label_comma()(count), scales::percent(percent),sep="\n")), 
              vjust = 1, nudge_y = .5, size = 3)
 
-### ARRANGE ALL LTBI CASCADE INTO ONE GRAPH
+### ARRANGE ALL LTBI CASCADES INTO ONE GRAPH
 
 ggsave(plot=ggarrange(all_cascade_g,
                       wl_cascade_g, 
@@ -359,149 +330,124 @@ ggsave(plot=ggarrange(all_cascade_g,
        "Figures/LTBI Treatment Cascade for TB-Free Chuuk 2023 - Updated Nov 2024.jpg",
        width = 1280, height = 1280, units = "px", scale = 2.5, dpi=300)
 #-----------------------------------------
-####TEMPORARY GRAPHS WITH FIRST BAR OF NO TESTED
-### OVERALL CHUUK LAGOON CASCADE
+####CASCADE GRAPHS IN STEP VERSION
+cascade_labels <- c("TST positive population*",
+                    "Recommended preventive treatment",
+                    "Treatment intitiated", 
+                    "Treatment completed§")
 
-#Weno and lagoon cascade
-overall_cascade <- cascade_dataset %>%
-  summarise(
-    #number of people per village that had a skin test placed
-    no_tst_placed = sum(tst_read_yn == "Read" | tst_read_yn == "Not read"),
-    #number of patients with an ltbi diagnosis def as having ltbi_treatment_id and not id as active in CC
-    no_ltbi_diagnosis = sum(ltbi_diagnosis == 1),
-    #number recommended ltbi using ltbi_treatment data
-    no_rec_ltbi = sum(ltbi_tx_indicated == 1),
-    #number started treatment def as ltbi_diagnosis == 1 % either start date in ltbi_tx or ltbi_dpot data
-    no_start_ltbi = sum(ltbi_tx_started == 1),
-    #defined as having completed tx status in dpot sheet or completed 11+ doses
-    no_complete_ltbi = sum(ltbi_tx_completed == 1, na.rm=T),
-    area = "All Chuuk Lagoon"
-  ) %>%
-  # #merge with rate_estimates by age group dataset for all ages, total rates
-  # merge(rate_estimates_age %>% filter(age_group == "5+") %>% 
-  #         select(area, pop, est_ltbi_cases) %>% rename(no_estimated_pos=est_ltbi_cases), by="area") %>%
-  # #estimate no of tst placed on estimated ltbi cases using pct of village that had a skin test placed
-  # mutate(no_tst_placed_on_ltbi = round(no_estimated_pos*(total_tst_placed/pop))
-  # ) %>%
-  # select(-total_tst_placed,-pop, -no_estimated_pos) %>%
-  #rearrange into long form for ggplot
-  pivot_longer(cols=1:5, names_to="category", values_to = "count") %>%
-  # group_by(area) %>%
-  #calculate cascade pcts by area
-  mutate(percent = count/max(count),
-         category = factor(category, 
-                           levels=cascade_order_brostrom_spec)) %>%
-  #rearrange into appropriate order based on cascade_order in above cascade_order listing
-  #all categories should exist in the list or an error will result
-  arrange(category)
-
-
-
-#OVERALL TST READ RATE
-all_cascade_g <- overall_cascade %>%
-    ggplot(aes(x=category, y=count)) +
-    geom_bar(stat="identity",position = position_stack(reverse = FALSE)) +
-    labs(
-      #title = "LTBI Treatment Cascade for TB-Free Chuuk, 2023",
-      #subtitle = "Age >= 5 y.o., All Chuuk Lagoon",
-      x = "",
-      y="No. of people"
-    # caption = 
-    #    "Total TST Positive (est.) = Hawaii % TST pos * Chuuk 2010 population 
-    #Skin Test Placed (est.) = Total TST Pos (est.) * Percent of 2010 pop that had TSTs placed
-    #Treatment Completed = Number completed 11+ doses of 3HP"
-    ) +  # title and caption
-    theme_classic() +
-    theme(panel.background = element_blank(), 
-          panel.border = element_blank(),
-          legend.position="bottom",
-          legend.title = element_blank(),
-          plot.margin = unit(c(1,2,1,2), "cm")) +# turn off minor 
-    scale_fill_brewer(palette="Set1") + 
-    facet_wrap( ~ area) + #tile the graphs
-    scale_x_discrete(labels = str_wrap(cascade_order_long_brostrom_spec, width = 10)) +
-    scale_y_continuous(labels = comma_format()) +  # add commas
-    geom_label(aes(label = paste(label_comma()(count), scales::percent(percent),sep="\n")), 
-               vjust = 1, nudge_y = .5)
-
-
-
-#Weno and lagoon cascade
-wl_cascade <- cascade_dataset %>%
-  group_by(area) %>%
-  filter(is.not.na(area)) %>%
-  summarise(
-    #estimate pct of village that had a skin test placed
-    no_tst_placed = sum(tst_place_visit == "Y"),
-    #number of patients with an ltbi diagnosis def as having ltbi_treatment_id and not id as active in CC
-    no_ltbi_diagnosis = sum(ltbi_diagnosis == 1),
-    #number recommended ltbi using ltbi_treatment data
-    no_rec_ltbi = sum(ltbi_tx_indicated == 1),
-    #number started treatment def as ltbi_diagnosis == 1 % either start date in ltbi_tx or ltbi_dpot data
-    no_start_ltbi = sum(ltbi_tx_started == 1),
-    #defined as having completed tx status in dpot sheet or completed 11+ doses
-    no_complete_ltbi = sum(ltbi_tx_completed == 1, na.rm=T)
-            ) %>%
-  #merge with rate_estimates by age group dataset for all ages, total rates
-  # merge(rate_estimates_age %>% filter(age_group == "5+") %>% 
-  #         select(area, pop, est_ltbi_cases) %>% rename(no_estimated_pos=est_ltbi_cases), by="area") %>%
-  # #estimate no of tst placed on estimated ltbi cases using pct of village that had a skin test placed
-  # mutate(no_tst_placed_on_ltbi = round(no_estimated_pos*(total_tst_placed/pop))
-  #        ) %>%
-  # select(-total_tst_placed,-pop, -no_estimated_pos) %>%
-  #rearrange into long form for ggplot
-  pivot_longer(cols=2:6, names_to="category", values_to = "count") %>%
-  group_by(area) %>%
-  #calculate cascade pcts by area
-  mutate(percent = count/max(count),
-         category = factor(category, 
-                           levels=cascade_order_brostrom_spec)) %>%
-  #rearrange into appropriate order based on cascade_order in above cascade_order listing
-  #all categories should exist in the list or an error will result
-  arrange(category)
-  
-  
-
-#OVERALL TST READ RATE
-wl_cascade_g <- wl_cascade %>%
-  ggplot(aes(x=category, y=count)) +
-  geom_bar(stat="identity",position = position_stack(reverse = FALSE)) +
+#OVERALL CASCADE
+all_cascade_step_g <- 
+  overall_cascade %>%
+  cbind(cascade_labels) %>%
+  mutate(step = case_when(category == "no_ltbi_diagnosis" ~ 1,
+                          category == "no_rec_ltbi" ~ 2,
+                          category == "no_start_ltbi" ~ 3,
+                          category == "no_complete_ltbi" ~ 4),
+         label = paste0(cascade_labels," (",percent(round(percent,2)),", n=",
+                       label_comma()(count),")")) %>%
+  select(-cascade_labels) %>%
+  rbind(tribble(~area,~category,~count,~percent,~step,~label,
+                "All Chuuk Lagoon", "end", NA, 0.7464855, 5, NA)) %>%
+  ggplot(aes(x=step, y=percent)) +
+  geom_step()  + # add pct
+  geom_text(aes(label = label),
+            nudge_x = 0.07, nudge_y = 0.007, 
+            hjust = 0,
+            # check_overlap = T,
+            size=3
+  ) +
+  coord_cartesian(xlim = c(1,5),
+                  ylim = c(.69,1.01)) +
   labs(
     #title = "LTBI Treatment Cascade for TB-Free Chuuk, 2023",
-    #subtitle = "Age >= 5 y.o., Lagoon vs. Weno",
+    #subtitle = "Age >= 5 y.o., All Chuuk Lagoon",
     x = "",
-    y="No. of people",
-    caption = 
-    # "Total TST Positive (est.) = Hawaii % TST pos * Chuuk 2010 population 
-    # Skin Test Placed (est.) = Total TST Pos (est.) * Percent of 2010 pop that had TSTs placed
-    "Treatment Completed = Received 11 or more doses of 3HP within 16 weeks") +  # title and caption
+    y="Percent of TST positive people",
+    # caption = paste("TST: tuberculin skin test",
+    #                 "*People diagnosed with TB disease were excluded from the analysis",
+    #                 "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period",
+    #                 sep="\n")
+  ) +
   theme_classic() +
-  theme(panel.background = element_blank(), 
+  theme(panel.background = element_blank(),
         panel.border = element_blank(),
         legend.position="bottom",
         legend.title = element_blank(),
-        plot.margin = unit(c(1,2,1,2), "cm")) +# turn off minor 
-  scale_fill_brewer(palette="Set1") + 
-  facet_wrap( ~ area) + #tile the graphs
-  scale_x_discrete(labels = str_wrap(cascade_order_long_brostrom_spec, width = 10)) +
-  scale_y_continuous(labels = comma_format()) +  # add commas
-  geom_label(aes(label = paste(label_comma()(count), scales::percent(percent),sep="\n")), 
-             vjust = 1, nudge_y = .5, size = 3)
+        plot.margin = unit(c(.1,.1,.1,.1), "cm"),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        plot.caption = element_text(hjust = 0)) +# turn off minor
+  facet_wrap( ~ area) + #tile the graph
+  scale_y_continuous(labels = percent)
+  
+
+#WENO AND LAGOON CASCADE GRAPH
+wl_cascade_step_g <-
+  wl_cascade %>%
+    arrange(area, -count) %>%
+    cbind(replicate(2,as.data.frame(cascade_labels), simplify=F) %>%
+            bind_rows(.id = 'id')) %>%
+  mutate(step = case_when(category == "no_ltbi_diagnosis" ~ 1,
+                          category == "no_rec_ltbi" ~ 2,
+                          category == "no_start_ltbi" ~ 3,
+                          category == "no_complete_ltbi" ~ 4),
+         label = paste0(cascade_labels," (",percent(round(percent,2)),", n=",
+                       label_comma()(count),")")) %>%
+  select(-cascade_labels, -id) %>%
+  rbind(tribble(~area,~category,~count,~percent,~step,~label,
+                "Lagoon", "end", NA, wl_cascade$percent[
+                  wl_cascade$area=="Lagoon" & wl_cascade$category=="no_complete_ltbi"], 5, NA,
+                "Weno", "end", NA, wl_cascade$percent[
+                  wl_cascade$area=="Weno" & wl_cascade$category=="no_complete_ltbi"], 5, NA)) %>%
+    mutate(area_fct = factor(area,
+                             levels=c("Weno","Lagoon"))) %>%
+  ggplot(aes(x=step, y=percent)) +
+  geom_step()  + # add pct
+  geom_text(aes(label = label),
+            nudge_x = 0.07, nudge_y = 0.007, 
+            hjust = 0,
+            size = 3,
+            # check_overlap = T
+  ) +
+  coord_cartesian(xlim = c(1,7),
+                  ylim = c(.69,1.005)) +
+  labs(
+    #title = "LTBI Treatment Cascade for TB-Free Chuuk, 2023",
+    #subtitle = "Age >= 5 y.o., All Chuuk Lagoon",
+    x = "",
+    y="Percent of TST positive people",
+    caption = paste("TST: tuberculin skin test",
+                    "*People diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from the analysis",
+                    "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period",
+                    sep="\n")
+  ) +
+  theme_classic() +
+  theme(panel.background = element_blank(),
+        panel.border = element_blank(),
+        legend.position="bottom",
+        legend.title = element_blank(),
+        plot.margin = unit(c(.1,.1,.1,.1), "cm"),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        plot.caption = element_text(hjust = 0)) +# turn off minor
+  facet_wrap(~area_fct) + #tile the graphs
+  scale_y_continuous(labels = percent)
+
+  
 
 ### ARRANGE ALL LTBI CASCADE INTO ONE GRAPH
 
-ggsave(plot=ggarrange(all_cascade_g,
-                      wl_cascade_g, 
-                      heights = c(.75,1),
-                      labels= c("LTBI Treatment Cascade for TB-Free Chuuk, 2023",
-                                "By Island Area"),
-                      font.label= list("plain","black",size=12),
+ggsave(plot=ggarrange(all_cascade_step_g,
+                      wl_cascade_step_g, 
+                      heights = c(.9,1.1),
+                      # font.label= list("plain","black",size=12),
                       common.legend = TRUE,
                       label.x = 0,
                       legend = "bottom",
                       nrow = 2),
-       "Figures/LTBI Treatment Cascade for TB-Free Chuuk 2023 - Updated Dec 2024.jpg",
-       width = 1280, height = 1280, units = "px", scale = 2.5, dpi=300)
+       "Figures/Figure 4 - LTBI Treatment Cascade Step version.jpg",
+       width = 5, height = 5.5, units = "in", scale = 1.75, dpi=300)
 #-----------------------------------------
 
 ###
