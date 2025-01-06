@@ -6,7 +6,7 @@ library(tidyverse) #pipes
 library(readxl) #excel load-in
 library(table1)
 library(gtsummary) #allows summary tabyl and p-value
-
+library(cowplot)
 
 #formulas
 `%notin%` <- Negate(`%in%`)
@@ -107,3 +107,50 @@ table1(~ factor(tst_result_10) + factor(known_tb_exposure) + factor(prior_tb) +
        data=screened %>% filter(tb_classification != 'LTBI'),
        overall=F, 
        extra.col=list(`P-value`=pvalue))
+
+##Graph of screened TB outcomes by 10-year age groups
+##stacked bar graph of  x-axis age groups with y-axis percent of TB cases treated
+tb_outcomes_gg <- screened %>%
+  mutate(tb_outcome_clean = case_when(tb_outcome == "Complete" ~ "Completed treatment/Cured",
+                                tb_outcome == "LTFU" ~ "Lost to follow-up",
+                                tb_outcome == "Refused" ~ "Lost to follow-up",
+                                tb_outcome == "Default" ~ "Pending/restart",
+                                tb_outcome == "Transfer" ~ "Transferred out",
+                                tb_outcome == "On Treatment" ~ "Currently treating",
+                                tb_outcome == "Died" ~ "Died"),
+         tb_outcome_clean = factor(tb_outcome_clean, levels = c("Completed treatment/Cured",
+                                                                "Currently treating",
+                                                                "Pending/restart",
+                                                                "Transferred out",
+                                                                "Lost to follow-up",
+                                                                "Died")),
+         age_group_10 = case_when(age < 10 ~ "0-9",
+                                  age >= 10 & age < 20 ~ "10-19",
+                                  age >= 20 & age < 30 ~ "20-29",
+                                  age >= 30 & age < 40 ~ "30-39",
+                                  age >= 40 & age < 50 ~ "40-49",
+                                  age >= 50 & age < 60 ~ "50-59",
+                                  age >= 60 ~ "60+")) %>%
+  filter(tb_classification == "TB") %>%
+  ggplot(aes(x=age_group_10, fill=fct_rev(tb_outcome_clean))) +
+  geom_bar(position="fill") +
+  scale_fill_manual(values = c("Completed treatment/Cured" = "#255683",
+                               "Currently treating" = "#B8D09F",
+                               "Pending/restart" = "#b6d3ff",
+                               "Transferred out" = "#FE9D5D",
+                               "Lost to follow-up" = "#FDDE86",
+                               "Died" = "red"),
+                    breaks=c("Completed treatment/Cured","Currently treating",
+                             "Pending/restart","Transferred out",
+                             "Lost to follow-up","Died")) +
+  scale_y_continuous(name="Percent of active tuberculosis cases treated",
+                     labels = percent)+
+  labs(x="Age group (years)",
+       fill = "Treatment outcome") +
+  theme_classic() + 
+  theme(legend.position = "bottom")
+
+#Save bar chart of tb outcome by 10-year age groups
+ggsave("Figures/Figure 3 - TB treatment outcomes by age group.png",
+       plot = tb_outcomes_gg, 
+       width = 1280, height = 720, units = "px", scale = 2, dpi=300)
