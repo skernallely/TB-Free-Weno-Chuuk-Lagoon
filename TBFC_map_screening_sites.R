@@ -3,6 +3,7 @@
 
 #PACKAGES
 library(sp)
+library(sf)
 library(tidyverse)
 library(readxl)
 library(ggthemes)
@@ -62,15 +63,15 @@ screening_sites_w_cases <-
   scale_fill_distiller(palette = "YlOrRd", direction = 1,
                        limits = c(0, 2000)) +
   geom_sf(data = sites, size = 2, 
-          fill = "black", aes(color = "High TB incidence villages")) +
-  scale_color_manual(values = c("High TB incidence villages" = "black")) +
+          fill = "black", aes(color = "High tuberculosis incidence villages")) +
+  scale_color_manual(values = c("High tuberculosis incidence villages" = "black")) +
   geom_text(data = island_labels, aes(x, y, label = name), size = 5) +
   coord_sf(xlim = c(332000,383000), ylim = c(802000, 833000), expand = FALSE) +
   labs(
     x = "Longitude",
     y = "Latitude",
     color = "Markers",
-    fill = "Cases of TB per 100,000 people (2013-2021)",
+    fill = "Cases of tuberculosis per 100,000 people (2013-2021)",
     caption = "Geometries: Island Atlas of Micronesia, iRei, WERI, DECEM; Case data: Chuuk Department of Health and Social Affairs"
   )  +
   guides(
@@ -90,7 +91,7 @@ screening_sites_w_cases <-
 #future map file path
 map_file <- "Figures/Figure 1 - Map of screening sites with nine year case rate.png"
 
-#Save map of 
+#Save map
 ggsave(plot=screening_sites_w_cases,
        map_file,
        width = 1280, height = 1020, units = "px", scale = 2, dpi=300)
