@@ -66,13 +66,15 @@ screening_sites_w_cases <-
           fill = "black", aes(color = "High tuberculosis incidence villages")) +
   scale_color_manual(values = c("High tuberculosis incidence villages" = "black")) +
   geom_text(data = island_labels, aes(x, y, label = name), size = 5) +
-  coord_sf(xlim = c(332000,383000), ylim = c(802000, 833000), expand = FALSE) +
+  coord_sf(xlim = c(332000,383000), ylim = c(803000, 833000), expand = FALSE) +
   labs(
     x = "Longitude",
     y = "Latitude",
     color = "Markers",
     fill = "Cases of tuberculosis per 100,000 people (2013-2021)",
-    caption = "Geometries: Island Atlas of Micronesia, iRei, WERI, DECEM; Case data: Chuuk Department of Health and Social Affairs"
+    caption = "
+    Geometries: Island Atlas of Micronesia; 
+    Case data: Chuuk Department of Health and Social Affairs; Population data: Micronesia Population and Housing Census 2010"
   )  +
   guides(
     colour = guide_legend(position = "inside"),
@@ -80,6 +82,7 @@ screening_sites_w_cases <-
   )  +
   theme_map(12) +
   theme(
+    plot.caption = element_text(hjust = 0),
     legend.position.inside = c(0, .53),
     legend.background = element_blank(),
     plot.background=element_rect(fill="white"),
