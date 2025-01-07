@@ -257,7 +257,7 @@ all_cascade_g <-
     x = "",
     y="Percent of TST positive people",
     # caption = paste("TST: tuberculin skin test",
-    #                 "*People diagnosed with TB disease were excluded from the analysis",
+    #                 "*People diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from the analysis",
     #                 "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period",
     #                 sep="\n")
   ) + 
@@ -317,7 +317,7 @@ wl_cascade_g <-
     x = "",
     y="Percent of TST positive people",
     caption = paste("TST: tuberculin skin test",
-                    "*People diagnosed with TB disease were excluded from the analysis",
+                    "*People diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from the analysis",
                     "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period",
                     sep="\n")
   ) + 
@@ -383,7 +383,7 @@ all_cascade_step_g <-
     x = "",
     y="Percent of TST positive people",
     # caption = paste("TST: tuberculin skin test",
-    #                 "*People diagnosed with TB disease were excluded from the analysis",
+    #                 "*People diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from the analysis",
     #                 "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period",
     #                 sep="\n")
   ) +

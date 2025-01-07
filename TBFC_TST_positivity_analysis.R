@@ -177,7 +177,7 @@ ggsave(plot=ggarrange(basic_age_pos,
 grouped_sex_pos <-
   ggplot(data = tst_pos_age_sex, 
                             aes(x=age_group, y=pct, fill = sex)) +
-  geom_bar(stat="identity",position = "dodge", color="black") +
+  geom_bar(stat="identity",position = "dodge") +
   theme_classic() +
   theme(panel.background = element_blank(), 
         panel.border = element_blank(),
