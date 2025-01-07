@@ -47,9 +47,9 @@ lagoon_region <- tribble(
 cascade_order <- c("no_ltbi_diagnosis", "no_rec_ltbi",
                    "no_start_ltbi", "no_complete_ltbi")
 
-cascade_order_long <- c("Skin Test Read*", 
+cascade_order_long <- c("Skin Test Read", 
                         "Latent Tx Recommended", 
-                        "Treatment Started", "Treatment Completed§")
+                        "Treatment Started", "Treatment Completed")
 
 cascade_order_brostrom_spec <- c("no_tst_placed", "no_ltbi_diagnosis", "no_rec_ltbi",
                    "no_start_ltbi", "no_complete_ltbi")
@@ -57,12 +57,17 @@ cascade_order_brostrom_spec <- c("no_tst_placed", "no_ltbi_diagnosis", "no_rec_l
 cascade_order_long_brostrom_spec <- c("Skin Test Placed", 
                         "Skin Test Read", "Latent Tx Recommended", 
                         "Treatment Started", "Treatment Completed")
+
+cascade_labels <- c("TST positive population*",
+                    "Recommended preventive treatment",
+                    "Treatment intitiated", 
+                    "Treatment completed§")
 ###
 #FUNCTIONS
 ###
 
 make_cascade_graph <- function(data) {
-  ggplot(data = data, aes(x=category, y=count, fill=category)) +
+  ggplot(data = data, aes(x=category, y=pct, fill=category)) +
     geom_bar(stat="identity",position = position_stack(reverse = FALSE)) +
     labs(
       #title = "LTBI Treatment Cascade for TB-Free Chuuk, 2023",
@@ -77,7 +82,7 @@ make_cascade_graph <- function(data) {
           plot.margin = unit(c(1,2,1,2), "cm")) +# turn off minor 
     scale_fill_brewer(palette="Set1") + 
     scale_x_discrete(labels = str_wrap(cascade_order_long, width = 10)) +
-    scale_y_continuous(labels = comma_format()) +  # add commas
+    scale_y_continuous(labels = percent) +  # add percent
     geom_label(aes(label = paste(label_comma()(count), scales::percent(percent),sep="\n")), 
                vjust = 1, nudge_y = .5, size = 3)
 }
@@ -242,29 +247,37 @@ overall_cascade <- cascade_dataset %>%
   arrange(category)
 
 #OVERALL CASCADE GRAPH
-all_cascade_g <- overall_cascade %>%
-  ggplot(aes(x=category, y=count)) +
-  geom_bar(stat="identity",position = position_stack(reverse = FALSE)) +
+all_cascade_g <-
+  overall_cascade %>%
+  ggplot(aes(x=category, y=percent)) +
+  geom_bar(stat="identity", fill="#255683") +
   labs(
     #title = "LTBI Treatment Cascade for TB-Free Chuuk, 2023",
     #subtitle = "Age >= 5 y.o., All Chuuk Lagoon",
     x = "",
-    y="No. of people"
-    # caption = "
-    #Treatment Completed = Number completed 11+ doses of 3HP"
-  ) +  # title and caption
+    y="Percent of TST positive people",
+    # caption = paste("TST: tuberculin skin test",
+    #                 "*People diagnosed with TB disease were excluded from the analysis",
+    #                 "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period",
+    #                 sep="\n")
+  ) + 
   theme_classic() +
-  theme(panel.background = element_blank(), 
+  theme(panel.background = element_blank(),
         panel.border = element_blank(),
         legend.position="bottom",
         legend.title = element_blank(),
-        plot.margin = unit(c(1,2,1,2), "cm")) +# turn off minor 
-  scale_fill_brewer(palette="Set1") + 
+        plot.margin = unit(c(.1,.1,.1,.1), "cm"),
+        plot.caption = element_text(hjust = 0),
+        text = element_text(size = 14)) + 
   facet_wrap( ~ area) + #tile the graphs
-  scale_x_discrete(labels = str_wrap(cascade_order_long, width = 10)) +
-  scale_y_continuous(labels = comma_format()) +  # add commas
-  geom_label(aes(label = paste(label_comma()(count), scales::percent(percent),sep="\n")), 
-             vjust = 1, nudge_y = .5)
+  scale_x_discrete(labels = str_wrap(cascade_labels, width = 20)) +
+  scale_y_continuous(labels = percent) +  # add commas
+  geom_text(aes(label =  paste0(percent(round(percent,2)),'\n',
+                                 "N=",label_comma()(count)), 
+                 vjust = 1.1),
+             size=12*.36,
+             colour="white",
+             fontface="bold")
 
 #Weno and lagoon cascade data
 wl_cascade <- cascade_dataset %>%
@@ -292,49 +305,54 @@ wl_cascade <- cascade_dataset %>%
   arrange(category)
 
 #WENO AND LAGOON CASCADE GRAPH
-wl_cascade_g <- wl_cascade %>%
-  ggplot(aes(x=category, y=count)) +
-  geom_bar(stat="identity",position = position_stack(reverse = FALSE)) +
+wl_cascade_g <-
+  wl_cascade %>%
+  mutate(area_fct = factor(area,
+                           levels=c("Weno","Lagoon"))) %>%
+  ggplot(aes(x=category, y=percent)) +
+  geom_bar(stat="identity", fill="#255683") +
   labs(
     #title = "LTBI Treatment Cascade for TB-Free Chuuk, 2023",
-    #subtitle = "Age >= 5 y.o., Lagoon vs. Weno",
+    #subtitle = "Age >= 5 y.o., All Chuuk Lagoon",
     x = "",
-    y="No. of people",
-    caption = 
-      "Treatment Completed = Received 11 or more doses of 3HP within 16 weeks") +  # title and caption
+    y="Percent of TST positive people",
+    caption = paste("TST: tuberculin skin test",
+                    "*People diagnosed with TB disease were excluded from the analysis",
+                    "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period",
+                    sep="\n")
+  ) + 
   theme_classic() +
-  theme(panel.background = element_blank(), 
+  theme(panel.background = element_blank(),
         panel.border = element_blank(),
         legend.position="bottom",
         legend.title = element_blank(),
-        plot.margin = unit(c(1,2,1,2), "cm")) +# turn off minor 
-  scale_fill_brewer(palette="Set1") + 
-  facet_wrap( ~ area) + #tile the graphs
-  scale_x_discrete(labels = str_wrap(cascade_order_long, width = 10)) +
-  scale_y_continuous(labels = comma_format()) +  # add commas
-  geom_label(aes(label = paste(label_comma()(count), scales::percent(percent),sep="\n")), 
-             vjust = 1, nudge_y = .5, size = 3)
+        plot.margin = unit(c(.1,.1,.1,.1), "cm"),
+        plot.caption = element_text(hjust = 0),
+        text = element_text(size = 14)) + 
+  facet_wrap( ~ area_fct) + #tile the graphs
+  scale_x_discrete(labels = str_wrap(cascade_labels, width = 10)) +
+  scale_y_continuous(labels = percent) +  # add commas
+  geom_text(aes(label =  paste0(percent(round(percent,2)),'\n',
+                                "N=",label_comma()(count)), 
+                vjust = 1.1),
+            size=12*.36,
+            colour="white",
+            fontface="bold")
 
 ### ARRANGE ALL LTBI CASCADES INTO ONE GRAPH
 
 ggsave(plot=ggarrange(all_cascade_g,
                       wl_cascade_g, 
-                      heights = c(.75,1),
-                      labels= c("LTBI Treatment Cascade for TB-Free Chuuk, 2023",
-                                "By Island Area"),
-                      font.label= list("plain","black",size=12),
+                      heights = c(.9,1.1),
+                      # font.label= list("plain","black",size=12),
                       common.legend = TRUE,
                       label.x = 0,
                       legend = "bottom",
                       nrow = 2),
-       "Figures/LTBI Treatment Cascade for TB-Free Chuuk 2023 - Updated Nov 2024.jpg",
-       width = 1280, height = 1280, units = "px", scale = 2.5, dpi=300)
+       "Figures/Figure 4 - LTBI Treatment Cascade Bar version.png",
+       width = 5, height = 5.5, units = "in", scale = 1.75, dpi=300)
 #-----------------------------------------
 ####CASCADE GRAPHS IN STEP VERSION
-cascade_labels <- c("TST positive population*",
-                    "Recommended preventive treatment",
-                    "Treatment intitiated", 
-                    "Treatment completed§")
 
 #OVERALL CASCADE
 all_cascade_step_g <- 
