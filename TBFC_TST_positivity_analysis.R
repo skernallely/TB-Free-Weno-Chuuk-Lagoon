@@ -177,7 +177,7 @@ ggsave(plot=ggarrange(basic_age_pos,
 grouped_sex_pos <-
   ggplot(data = tst_pos_age_sex, 
                             aes(x=age_group, y=pct, fill = sex)) +
-  geom_bar(stat="identity",position = "dodge") +
+  geom_bar(stat="identity",position = "dodge", color="black") +
   theme_classic() +
   theme(panel.background = element_blank(), 
         panel.border = element_blank(),
@@ -187,7 +187,7 @@ grouped_sex_pos <-
     labs(
       x="Age group (years)",
       fill = "Sex") +  # title and caption
-  scale_fill_discrete() +
+  scale_fill_manual(values=c("#255683","#b6d3ff")) +
   coord_cartesian(ylim = c(0, 0.5)) +
   scale_y_continuous(name="% of tuberculin skin tests read >= 10 mm",
                      labels = percent)
