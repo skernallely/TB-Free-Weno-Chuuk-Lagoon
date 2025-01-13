@@ -173,6 +173,24 @@ cascade_dataset %>%
   filter(ltbi_diagnosis == 1) %>%
   tabyl(ltbi_tx_started)
 
+#type of treatment regimen
+cascade_dataset %>%
+  merge(read_excel("Data/flatfile_clean.xlsx") %>%
+          select(registration_no,medication_order_full),
+        by="registration_no")%>%
+  merge(read_excel("Data/LTBI DPOT Patient List.xlsx", sheet = "LTBI List", 
+             guess_max = 30, col_names = TRUE) %>%
+         clean_names() %>%
+          mutate(registration_no = ifelse(str_length(registration_number) > 7, registration_number,
+                                  sprintf("%07d", as.numeric(registration_number)))),
+        by="registration_no") %>%
+  filter(ltbi_diagnosis == 1) %>%
+  mutate(`3hp_yn` = case_when(is.na(regimen) ~ NA,
+                              grepl("3H",regimen) ~ 1,
+                              grepl("3H",regimen) == F ~ 0)) %>%
+  tabyl(`3hp_yn`) %>%
+  adorn_totals()
+
 #number of people completed ltbi treatment
 cascade_dataset %>%
   filter(ltbi_diagnosis == 1) %>%
@@ -217,6 +235,7 @@ cascade_dataset %>%
                                        toupper(notes)) ~ 1)
          ) %>%
   tabyl(alcohol_use)
+
 
 #-----------------------------------------------
 ##ORIGINAL CASCADE WITHOUT FIRST BAR OF TOTAL TESTED
