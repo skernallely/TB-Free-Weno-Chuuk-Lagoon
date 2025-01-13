@@ -96,6 +96,8 @@ screened %>%
 
 #number who completed TB treatment
 screened %>% 
+  filter(tb_classification == "TB") %>%
+  tabyl(tb_outcome)
   summarise(n= sum(tb_outcome == "Complete", na.rm=T))
 
 ##TB FACTORS
@@ -114,13 +116,13 @@ tb_outcomes_gg <- screened %>%
   mutate(tb_outcome_clean = case_when(tb_outcome == "Complete" ~ "Completed treatment/Cured",
                                 tb_outcome == "LTFU" ~ "Lost to follow-up",
                                 tb_outcome == "Refused" ~ "Lost to follow-up",
-                                tb_outcome == "Default" ~ "Pending/restart",
+                                tb_outcome == "Default" ~ "Default",
                                 tb_outcome == "Transfer" ~ "Transferred out",
                                 tb_outcome == "On Treatment" ~ "Currently treating",
                                 tb_outcome == "Died" ~ "Died"),
          tb_outcome_clean = factor(tb_outcome_clean, levels = c("Completed treatment/Cured",
                                                                 "Currently treating",
-                                                                "Pending/restart",
+                                                                "Default",
                                                                 "Transferred out",
                                                                 "Lost to follow-up",
                                                                 "Died")),
@@ -135,13 +137,13 @@ tb_outcomes_gg <- screened %>%
   ggplot(aes(x=age_group_10, fill=fct_rev(tb_outcome_clean))) +
   geom_bar(position="fill") +
   scale_fill_manual(values = c("Completed treatment/Cured" = "#255683",
-                               "Currently treating" = "#B8D09F",
-                               "Pending/restart" = "#b6d3ff",
+                               "Currently treating" = "#b6d3ff",
+                               "Default" = "#B8D09F",
                                "Transferred out" = "#FE9D5D",
                                "Lost to follow-up" = "#FDDE86",
                                "Died" = "red"),
                     breaks=c("Completed treatment/Cured","Currently treating",
-                             "Pending/restart","Transferred out",
+                             "Default","Transferred out",
                              "Lost to follow-up","Died")) +
   scale_y_continuous(name="Percent of active tuberculosis cases treated",
                      labels = percent)+
