@@ -42,12 +42,29 @@ island_labels <- tribble(~name,~polygon_name,~x,~y,~nine_yr_tb_rate,
   "Tol","Tolensom", 350305.267296, 816201.203085, 332, 
   "Onei","Oneisom", 346096.959500, 818764.935701, 122,
   "Paata","Paata Tupunion", 340746.319681, 816617.134015, 251,
-  "Polle","Pwene", 341689.996794, 809506.997999, 445)
+  "Polle","Pwene", 341689.996794, 809506.997999, 445,
+  "Eot", "Eot", NA, NA, 42,
+  "Fonoton", "Fonoton", NA, NA, 29,
+  "Fanapanges", "Fanapanges", NA, NA, 50,
+  "Parem", "Parem", NA, NA,  97,
+  "Piis-Panewu", "Piis-Panewu", NA, NA, 89,
+  "Ramanum", "Ramanum", NA, NA, 128,
+  "Siis", "Siis", NA, NA, 32,
+  NA, NA, NA, NA, 0
+  )
 
 tb_case_data <- merge(chuuk_lagoon_shapefile %>%
                             select(Name,geometry) %>%
                             rename(polygon_name=Name), 
                       island_labels, by = "polygon_name") %>%
+  mutate(rate_labels = case_when(nine_yr_tb_rate == 0 ~ "0",
+                                 nine_yr_tb_rate <= 150 ~ "1-150",
+                                 nine_yr_tb_rate <= 300 ~ "151-300",
+                                 nine_yr_tb_rate <= 450 ~ "301-450",
+                                 nine_yr_tb_rate > 450 ~ "450+"),
+         rate_labels = factor(rate_labels, levels=c("0","1-150",
+                                                    "151-300","301-450",
+                                                    "450+"))) %>%
   st_as_sf()
 #add a nice base layer?
 # map<-basemap_gglayer(chuuk_lagoon_shapefile, 
@@ -59,12 +76,14 @@ tb_case_data <- merge(chuuk_lagoon_shapefile %>%
 screening_sites_w_cases <-
   ggplot(data = chuuk_lagoon_shapefile) +
   geom_sf() +
-  geom_sf(data = tb_case_data, aes(fill = nine_yr_tb_rate)) +
-  scale_fill_distiller(palette = "YlOrRd", direction = 1,
-                       limits = c(0, 2000)) +
-  geom_sf(data = sites, size = 2, 
-          fill = "black", aes(color = "High tuberculosis incidence villages")) +
-  scale_color_manual(values = c("High tuberculosis incidence villages" = "black")) +
+  geom_sf(data = tb_case_data, aes(fill = rate_labels)) +
+  scale_fill_manual(limits = levels(tb_case_data$rate_labels),
+                        values = c("white", "#b6d3ff", "#96b8e4",
+                                   "#4f6e9f", "#2f476b")
+    ) + 
+  geom_sf(data = sites, size = 2, shape = 21,
+          fill="black", aes(colour = "High tuberculosis incidence villages screened")) +
+  scale_color_manual(values = c("High tuberculosis incidence villages screened" = "white")) +
   geom_text(data = island_labels, aes(x, y, label = name), size = 5) +
   coord_sf(xlim = c(332000,383000), ylim = c(803000, 833000), expand = FALSE) +
   labs(
@@ -73,17 +92,17 @@ screening_sites_w_cases <-
     color = "Markers",
     fill = "Cases of tuberculosis per 100,000 people (2013-2021)",
     caption = "
-    Geometries: Island Atlas of Micronesia; 
+    Geometries: Chuuk Municipalities, Digital Atlas of Micronesia, 2020; 
     Case data: Chuuk Department of Health and Social Affairs; Population data: Micronesia Population and Housing Census 2010"
   )  +
   guides(
-    colour = guide_legend(position = "inside"),
-    fill   = guide_colourbar(position = "inside")
+    colour = guide_legend(position = "inside", order = 1),
+    fill   = guide_legend(position = "inside", ncol = 1, order = 2)
   )  +
   theme_map(12) +
   theme(
     plot.caption = element_text(hjust = 0),
-    legend.position.inside = c(0, .53),
+    legend.position.inside = c(0, .5),
     legend.background = element_blank(),
     plot.background=element_rect(fill="white"),
     panel.background = element_blank(),
