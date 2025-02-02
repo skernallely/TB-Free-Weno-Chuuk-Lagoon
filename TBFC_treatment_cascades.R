@@ -145,7 +145,7 @@ cascade_dataset <- read_excel("Data/tbfc_analysis_dataset.xlsx") %>%
                             toupper(island_ltbi) == "WENO" | 
                             region %in% c("NW", "MORT") ~ "Weno",
                           toupper(municipality) != "WENO" | 
-                            toupper(island_ltbi) != "WENO" ~ "Lagoon"
+                            toupper(island_ltbi) != "WENO" ~ "Lagoon Islands"
          )) %>%
   select(registration_no, screened_at_clinic, tst_read_yn, tst_result, 
          age_group,
@@ -252,7 +252,7 @@ overall_cascade <- cascade_dataset %>%
     no_start_ltbi = sum(ltbi_tx_started == 1),
     #defined as having completed tx status in dpot sheet or completed 11+ doses
     no_complete_ltbi = sum(ltbi_tx_completed == 1, na.rm=T),
-    area = "All Chuuk Lagoon"
+    area = "Chuuk Lagoon"
   ) %>%
   #rearrange into long form for ggplot
   pivot_longer(cols=1:4, names_to="category", values_to = "count") %>%
@@ -327,7 +327,7 @@ wl_cascade <- cascade_dataset %>%
 wl_cascade_g <-
   wl_cascade %>%
   mutate(area_fct = factor(area,
-                           levels=c("Weno","Lagoon"))) %>%
+                           levels=c("Weno","Lagoon Islands"))) %>%
   ggplot(aes(x=category, y=percent)) +
   geom_bar(stat="identity", fill="#255683") +
   labs(
@@ -335,7 +335,7 @@ wl_cascade_g <-
     #subtitle = "Age >= 5 y.o., All Chuuk Lagoon",
     x = "",
     y="Percent of TST positive people",
-    caption = paste("TST: tuberculin skin test",
+    caption = paste("TST: tuberculin skin test; TB: tuberculosis; 3HP: once-weekly rifapentine with isoniazid",
                     "*People diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from the analysis",
                     "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period",
                     sep="\n")
@@ -385,7 +385,7 @@ all_cascade_step_g <-
                        label_comma()(count),")")) %>%
   select(-cascade_labels) %>%
   rbind(tribble(~area,~category,~count,~percent,~step,~label,
-                "All Chuuk Lagoon", "end", NA, 0.7464855, 5, NA)) %>%
+                "Chuuk Lagoon", "end", NA, 0.7464855, 5, NA)) %>%
   ggplot(aes(x=step, y=percent)) +
   geom_step()  + # add pct
   geom_text(aes(label = label),
@@ -433,12 +433,12 @@ wl_cascade_step_g <-
                        label_comma()(count),")")) %>%
   select(-cascade_labels, -id) %>%
   rbind(tribble(~area,~category,~count,~percent,~step,~label,
-                "Lagoon", "end", NA, wl_cascade$percent[
-                  wl_cascade$area=="Lagoon" & wl_cascade$category=="no_complete_ltbi"], 5, NA,
+                "Lagoon Islands", "end", NA, wl_cascade$percent[
+                  wl_cascade$area=="Lagoon Islands" & wl_cascade$category=="no_complete_ltbi"], 5, NA,
                 "Weno", "end", NA, wl_cascade$percent[
                   wl_cascade$area=="Weno" & wl_cascade$category=="no_complete_ltbi"], 5, NA)) %>%
     mutate(area_fct = factor(area,
-                             levels=c("Weno","Lagoon"))) %>%
+                             levels=c("Weno","Lagoon Islands"))) %>%
   ggplot(aes(x=step, y=percent)) +
   geom_step()  + # add pct
   geom_text(aes(label = label),

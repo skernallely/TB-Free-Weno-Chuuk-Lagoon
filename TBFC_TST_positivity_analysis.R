@@ -183,19 +183,20 @@ grouped_sex_pos <-
         panel.border = element_blank(),
         legend.position="bottom",
         legend.background = element_blank(),
-        plot.margin = unit(c(0.1,0.1,0.1,0.1), "cm"))  + # turn off minor 
+        plot.margin = unit(c(0.1,0.1,0.1,0.1), "cm"),
+        text = element_text(size = 14))  + # turn off minor 
     labs(
       x="Age group (years)",
       fill = "Sex") +  # title and caption
   scale_fill_manual(values=c("#255683","#b6d3ff")) +
   coord_cartesian(ylim = c(0, 0.5)) +
-  scale_y_continuous(name="% of tuberculin skin tests read >= 10 mm",
+  scale_y_continuous(name="Percent of tuberculin skin tests read >= 10 mm",
                      labels = percent)
 
 #Save grouped bar chart with positivity by age and sex
 ggsave(plot=grouped_sex_pos,
        "Figures/Figure 2 - Grouped TST positivity rate by age and sex.png",
-       width = 1280, height = 720, units = "px", scale = 2, dpi=300)
+       width = 1280, height = 1024, units = "px", scale = 2, dpi=300)
 
 #---------------------------
 

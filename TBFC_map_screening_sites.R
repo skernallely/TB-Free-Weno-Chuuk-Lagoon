@@ -82,8 +82,8 @@ screening_sites_w_cases <-
                                    "#4f6e9f", "#2f476b")
     ) + 
   geom_sf(data = sites, size = 2, shape = 21,
-          fill="black", aes(colour = "High tuberculosis incidence villages screened")) +
-  scale_color_manual(values = c("High tuberculosis incidence villages screened" = "white")) +
+          fill="black", aes(colour = "Villages with high incidence of tuberculosis screened in TB-Free Chuuk")) +
+  scale_color_manual(values = c("Villages with high incidence of tuberculosis screened in TB-Free Chuuk" = "white")) +
   geom_text(data = island_labels, aes(x, y, label = name), size = 5) +
   coord_sf(xlim = c(332000,383000), ylim = c(803000, 833000), expand = FALSE) +
   labs(

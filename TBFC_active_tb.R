@@ -97,7 +97,6 @@ screened %>%
 #number who completed TB treatment
 screened %>% 
   filter(tb_classification == "TB") %>%
-  tabyl(tb_outcome)
   summarise(n= sum(tb_outcome == "Complete", na.rm=T))
 
 ##TB FACTORS
@@ -112,7 +111,8 @@ table1(~ factor(tst_result_10) + factor(known_tb_exposure) + factor(prior_tb) +
 
 ##Graph of screened TB outcomes by 10-year age groups
 ##stacked bar graph of  x-axis age groups with y-axis percent of TB cases treated
-tb_outcomes_gg <- screened %>%
+tb_outcomes_gg <-
+  screened %>%
   mutate(tb_outcome_clean = case_when(tb_outcome == "Complete" ~ "Completed treatment/Cured",
                                 tb_outcome == "LTFU" ~ "Lost to follow-up",
                                 tb_outcome == "Refused" ~ "Lost to follow-up",
@@ -145,14 +145,17 @@ tb_outcomes_gg <- screened %>%
                     breaks=c("Completed treatment/Cured","Currently treating",
                              "Default","Transferred out",
                              "Lost to follow-up","Died")) +
-  scale_y_continuous(name="Percent of active tuberculosis cases treated",
+  scale_y_continuous(name="Percent of persons diagnosed with tuberculosis disease",
                      labels = percent)+
   labs(x="Age group (years)",
        fill = "Treatment outcome") +
   theme_classic() + 
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom",
+        text = element_text(size = 14),
+        legend.margin = margin(t = 0, r = 0, b = 0, l = -45, unit = "pt"),
+        )
 
 #Save bar chart of tb outcome by 10-year age groups
 ggsave("Figures/Figure 3 - TB treatment outcomes by age group.png",
        plot = tb_outcomes_gg, 
-       width = 1280, height = 720, units = "px", scale = 2, dpi=300)
+       width = 1280, height = 1024, units = "px", scale = 2, dpi=300)
