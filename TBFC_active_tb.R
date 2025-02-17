@@ -109,6 +109,36 @@ table1(~ factor(tst_result_10) + factor(known_tb_exposure) + factor(prior_tb) +
        overall=F, 
        extra.col=list(`P-value`=pvalue))
 
+#number of active TB cases by route to diagnosis
+screened %>% 
+  filter(tb_classification == 'TB') %>%
+  mutate(dm_a1c_result = case_when(is.na(a1c) ~ NA,
+                                   a1c < 6.5 ~ "Normal",
+                                   a1c >= 6.5 ~ "Diabetes"),
+         al_one_symptom = case_when(al_one_symptom == 1 ~ "Symptomatic",
+                                    al_one_symptom == 0 ~ "Asymptomatic",
+                                    is.na(al_one_symptom) ~ NA),
+         known_tb_exposure = case_when(known_tb_exposure == 1 ~ "Known-exposure",
+                                       known_tb_exposure == 0 ~ "No-known-exposure",
+                                       is.na(known_tb_exposure) ~ NA),
+         prior_tb = case_when(prior_tb == 1 ~ "Prior-TB",
+                              prior_tb == 0 ~ "No-prior-TB",
+                              is.na(prior_tb) ~ NA),
+         abnormal_xray = case_when(is.na(abnormal_xray) ~ NA,
+                                   abnormal_xray == 1 ~ "Abnormal-xray",
+                                   abnormal_xray == 0 ~ "Normal-xray"),
+         id_method = paste(tst_result_10, 
+                       dm_a1c_result, 
+                       al_one_symptom, 
+                       known_tb_exposure, 
+                       prior_tb),
+         routed_by_a1c = case_when(abnormal_xray != 1 &
+                                     prior_tb != 1 &
+                                     known_tb_exposure != 1 &
+                                     al_one_symptom != 1 & 
+                                     dm_a1c_result == "Diabetes" ~ 1)) %>%
+  tabyl(routed_by_a1c)
+
 ##Graph of screened TB outcomes by 10-year age groups
 ##stacked bar graph of  x-axis age groups with y-axis percent of TB cases treated
 tb_outcomes_gg <-
