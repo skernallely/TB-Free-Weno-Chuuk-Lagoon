@@ -7,6 +7,7 @@ library(readxl) #excel load-in
 library(table1)
 library(gtsummary) #allows summary tabyl and p-value
 library(cowplot)
+library(scales) #percents for graphs
 
 #formulas
 `%notin%` <- Negate(`%in%`)
@@ -146,13 +147,12 @@ tb_outcomes_gg <-
   mutate(tb_outcome_clean = case_when(tb_outcome == "Complete" ~ "Completed treatment/Cured",
                                 tb_outcome == "LTFU" ~ "Lost to follow-up",
                                 tb_outcome == "Refused" ~ "Lost to follow-up",
-                                tb_outcome == "Default" ~ "Default",
+                                tb_outcome == "Default" ~ "Lost to follow-up",
                                 tb_outcome == "Transfer" ~ "Transferred out",
                                 tb_outcome == "On Treatment" ~ "Currently treating",
                                 tb_outcome == "Died" ~ "Died"),
          tb_outcome_clean = factor(tb_outcome_clean, levels = c("Completed treatment/Cured",
                                                                 "Currently treating",
-                                                                "Default",
                                                                 "Transferred out",
                                                                 "Lost to follow-up",
                                                                 "Died")),
@@ -168,12 +168,11 @@ tb_outcomes_gg <-
   geom_bar(position="fill") +
   scale_fill_manual(values = c("Completed treatment/Cured" = "#255683",
                                "Currently treating" = "#b6d3ff",
-                               "Default" = "#B8D09F",
                                "Transferred out" = "#FE9D5D",
                                "Lost to follow-up" = "#FDDE86",
                                "Died" = "red"),
                     breaks=c("Completed treatment/Cured","Currently treating",
-                             "Default","Transferred out",
+                             "Transferred out",
                              "Lost to follow-up","Died")) +
   scale_y_continuous(name="Percent of persons diagnosed with tuberculosis disease",
                      labels = percent)+
