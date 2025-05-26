@@ -92,6 +92,11 @@ table1(~ factor(age_group)
        overall=F, 
        extra.col=list(`P-value`=pvalue))
 
+#chi square of completion by age group
+ltbi %>%
+  tbl_summary(by = area, include = c(completed_yn),
+              digits = ~ 1) %>%
+  add_p()
 
 age_region_ltbi <- ltbi %>%
   group_by(age_group, area) %>%
