@@ -188,7 +188,7 @@ tb_outcomes_gg <-
                     breaks=c("Completed treatment/Cured","Currently treating",
                              "Transferred out",
                              "Lost to follow-up","Died")) +
-  scale_y_continuous(name="Percent of persons diagnosed with tuberculosis disease",
+  scale_y_continuous(name="Percentage of persons diagnosed with tuberculosis disease",
                      labels = percent)+
   labs(x="Age group (years)",
        fill = "Treatment outcome") +

@@ -203,7 +203,7 @@ grouped_sex_pos <-
       fill = "Sex") +  # title and caption
   scale_fill_manual(values=c("#FDDE86","#b6d3ff")) +
   coord_cartesian(ylim = c(0, 0.6)) +
-  scale_y_continuous(name="Percent of tuberculin skin tests read >= 10 mm",
+  scale_y_continuous(name="Percentage of tuberculin skin tests read >= 10 mm",
                      labels = percent) +
   geom_errorbar(aes(ymin = lower, ymax = upper),
                 width=.2,
