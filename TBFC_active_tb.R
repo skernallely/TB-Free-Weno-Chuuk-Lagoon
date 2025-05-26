@@ -8,6 +8,7 @@ library(table1)
 library(gtsummary) #allows summary tabyl and p-value
 library(cowplot)
 library(scales) #percents for graphs
+library(janitor)
 
 #formulas
 `%notin%` <- Negate(`%in%`)
@@ -137,12 +138,13 @@ screened %>%
                                      prior_tb != 1 &
                                      known_tb_exposure != 1 &
                                      al_one_symptom != 1 & 
-                                     dm_a1c_result == "Diabetes" ~ 1)) %>%
+                                     dm_a1c_result == "Diabetes" ~ 1),
+         aided_by_a1c = case_when(dm_a1c_result == "Diabetes" ~ 1)) %>%
   tabyl(routed_by_a1c)
 
 ##Graph of screened TB outcomes by 10-year age groups
 ##stacked bar graph of  x-axis age groups with y-axis percent of TB cases treated
-tb_outcomes_gg <-
+tb_outcomes_data <-
   screened %>%
   mutate(tb_outcome_clean = case_when(tb_outcome == "Complete" ~ "Completed treatment/Cured",
                                 tb_outcome == "LTFU" ~ "Lost to follow-up",
@@ -153,20 +155,32 @@ tb_outcomes_gg <-
                                 tb_outcome == "Died" ~ "Died"),
          tb_outcome_clean = factor(tb_outcome_clean, levels = c("Completed treatment/Cured",
                                                                 "Currently treating",
-                                                                "Transferred out",
-                                                                "Lost to follow-up",
-                                                                "Died")),
+                                                                "Lost to follow-up")),
          age_group_10 = case_when(age < 10 ~ "0-9",
                                   age >= 10 & age < 20 ~ "10-19",
                                   age >= 20 & age < 30 ~ "20-29",
                                   age >= 30 & age < 40 ~ "30-39",
                                   age >= 40 & age < 50 ~ "40-49",
                                   age >= 50 & age < 60 ~ "50-59",
-                                  age >= 60 ~ "60+")) %>%
+                                  age >= 60 ~ "60+")
+  ) %>%
   filter(tb_classification == "TB") %>%
-  ggplot(aes(x=age_group_10, fill=fct_rev(tb_outcome_clean))) +
-  geom_bar(position="fill") +
-  scale_fill_manual(values = c("Completed treatment/Cured" = "#255683",
+  tabyl(age_group_10, tb_outcome_clean) %>%
+  adorn_totals("col") %>%
+  mutate(labels = paste(age_group_10,paste0("n=",Total),sep="\n")) %>%
+  mutate(labels = factor(labels, levels = labels)) %>%
+  pivot_longer(cols=c(2:4), names_to="tb_outcome_clean", values_to = "num") %>%
+  mutate(pct = num / Total) %>%
+  filter(num > 0)
+  
+
+  
+tb_outcomes_gg <-
+  ggplot(data = tb_outcomes_data, aes(x=labels, y=pct, fill=fct_rev(tb_outcome_clean),
+                                      label=percent(pct, accuracy = 0.1))) +
+  geom_bar(position="fill", stat="identity") +
+  geom_text(aes(label = percent(pct, accuracy = 0.1)), position = position_stack(vjust = 0.5)) +
+  scale_fill_manual(values = c("Completed treatment/Cured" = "#4f6e9f",
                                "Currently treating" = "#b6d3ff",
                                "Transferred out" = "#FE9D5D",
                                "Lost to follow-up" = "#FDDE86",

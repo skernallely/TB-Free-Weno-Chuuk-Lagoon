@@ -44,3 +44,6 @@ diabetes_analysis %>%
 diabetes_analysis %>%
   filter(dm_a1c_result == 1) %>%
   tabyl(new_dm_result)
+
+
+##TB and Diabetes

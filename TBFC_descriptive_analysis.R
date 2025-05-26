@@ -71,7 +71,24 @@ screened <- read_excel("Data/tbfc_analysis_dataset.xlsx",
                             levels=c("0-4","5-9","10-19","20-39","40-59","60+")),
 
          region = case_when(region == "NW" | region == "MORT" ~ "NORTHERN NAMONEAS",
-                            .default = region)
+                            .default = region),
+         a1c_cat = case_when( a1c >= 6.5 ~ "Diabetes",
+                             a1c >= 5.7 & a1c < 6.5 ~ "Pre-diabetes",
+                             a1c < 5.7 ~ "Normal",
+                             TRUE ~ "Unknown"),
+         diabetes_yn = case_when(a1c >= 6.5 ~ "Yes",
+                                 history_diabetes == "Y" ~ "Yes",
+                                 history_diabetes == "N" ~ "No",
+                                 history_diabetes == "Yes" ~ "Yes",
+                                 history_diabetes == "No" ~ "No",
+                                 history_diabetes == 1 ~ "Yes",
+                                 history_diabetes == 0 ~ "No",
+                                 a1c <6.5 ~ "No"),
+         diabetes_cat = case_when(diabetes_yn == "Yes" & a1c >=6.5 ~ "Bad diabetes control",
+                                  diabetes_yn == "Yes" & a1c <6.5 ~ "Good diabetes control",
+                                  diabetes_yn == "No" ~ "No diabetes",
+                                  
+         )
   )
 
 #table of demographic characteristics for TBFC
@@ -94,10 +111,18 @@ table1(~ factor(tst_result_10) + factor(hd_prev_given) + factor(ltbi_tx_started)
        overall=c(left="Total"))
 
 #bmi and a1c by tb classification
-table1(~ factor(bmi_cat) + a1c
+table1(~ a1c + factor(a1c_cat) + diabetes_cat
        | tb_classification, 
-       data=screened %>% filter(age >= 18),
+       data=screened %>% filter(is.not.na(a1c) & age >= 18),
        overall=c(left="Total"))
+
+#by strata
+screened %>%
+  filter(age >= 18 & is.not.na(a1c)) %>%
+  select(tb_classification, a1c_cat, diabetes_cat) %>%
+  tbl_summary(by = tb_classification, include = c(diabetes_cat),
+              digits = ~ 1) %>%
+  add_p()
 
 ##LTBI FACTORS
 #associated factors with an LTBI diagnosis
