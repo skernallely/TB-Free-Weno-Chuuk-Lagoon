@@ -148,7 +148,7 @@ cascade_dataset <- read_excel("Data/tbfc_analysis_dataset.xlsx") %>%
                             toupper(island_ltbi) != "WENO" ~ "Lagoon Islands"
          )) %>%
   select(registration_no, screened_at_clinic, tst_read_yn, tst_result, 
-         age_group,
+         age_group, sex,
          ltbi_diagnosis, ltbi_tx_indicated, ltbi_tx_started,
          ltbi_doses_completed,
          epi_status, region, municipality, village, 
@@ -202,11 +202,20 @@ cascade_dataset %>%
   filter(ltbi_diagnosis == 1) %>%
   select(ltbi_tx_completed, area) %>%
   tbl_summary(by = area, missing = "no",
-              statistic = ltbi_tx_completed ~ "{p}%",
+              statistic = ltbi_tx_completed ~ "{n}, {p}%",
               digits = ~ 1) %>%
   add_p()
 
 #by age group
+cascade_dataset %>%
+  filter(ltbi_diagnosis == 1) %>%
+  select(ltbi_tx_completed, age_group) %>%
+  tbl_summary(by = age_group, missing = "no",
+              statistic = ltbi_tx_completed ~ "{n}, {p}%",
+              digits = ~ 1) %>%
+  add_p()
+
+#by age group and island
 cascade_dataset %>%
   filter(ltbi_diagnosis == 1) %>%
   select(ltbi_tx_completed, area, age_group) %>%
@@ -214,7 +223,21 @@ cascade_dataset %>%
              .tbl_fun =
                ~ .x %>%
                tbl_summary(by=area, missing = "no",
-                           statistic = ltbi_tx_completed ~ "{p}%",
+                           statistic = ltbi_tx_completed ~ "{n}, {p}%",
+                           digits = ~ 1) %>%
+               add_p()
+  )
+
+
+#by sex
+cascade_dataset %>%
+  filter(ltbi_diagnosis == 1) %>%
+  select(ltbi_tx_completed, sex, age_group) %>%
+  tbl_strata(strata = c(age_group), 
+             .tbl_fun =
+               ~ .x %>%
+               tbl_summary(by=sex, missing = "no",
+                           statistic = ltbi_tx_completed ~ "{n}, {p}%",
                            digits = ~ 1) %>%
                add_p()
   )
