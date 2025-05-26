@@ -26,6 +26,10 @@ tbfc_analysis <- read_excel("Data/tbfc_analysis_dataset.xlsx",
                                    village)
          ),
          full_village_name = paste(municipality,village)
+  )%>%
+  mutate(area = case_when(region %in% c("FAICHUUK",
+                                        "SOUTHERN NAMONEAS") ~ "LAGOON",
+                          .default = "WENO")
   )
 
 
@@ -33,7 +37,16 @@ tbfc_analysis <- read_excel("Data/tbfc_analysis_dataset.xlsx",
 tbfc_analysis %>%
   group_by() %>%
   tabyl(age_group, screened_at_clinic, sex) %>%
-  adorn_percentages()
+  # adorn_percentages()
+  adorn_totals("col")
+
+#clinic return data by age group and sex
+tbfc_analysis %>%
+  group_by() %>%
+  tabyl(area, screened_at_clinic, sex) %>%
+  # adorn_percentages()
+  adorn_totals("col")
+
 
 #chi square of screened at clinic by sex
 tbfc_analysis %>%
@@ -43,18 +56,14 @@ tbfc_analysis %>%
 
 #chi square of screened at clinic by age group
 tbfc_analysis %>%
+  filter(sex == "F") %>%
   tbl_summary(by = age_group, include = c(screened_at_clinic),
               digits = ~ 1) %>%
   add_p()
 
 #chi square of screened at clinic by lagoon vs weno
-tst_dataset %>%
-  mutate(area = case_when(region %in% c("FAICHUUK",
-                                        "SOUTHERN NAMONEAS") ~ "LAGOON",
-                          .default = "WENO")
-  ) %>%
+tbfc_analysis %>%
   group_by() %>%
   tbl_summary(by = area, include = c(screened_at_clinic),
               digits = ~ 1) %>%
   add_p()
-
