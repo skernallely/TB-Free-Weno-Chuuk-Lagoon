@@ -79,12 +79,17 @@ tst_dataset %>%
 #tst positivity by age group
 tst_dataset %>%
   filter(is.not.na(tst_result_10)) %>%
-  tabyl(age_group, tst_result_10) %>%
-  adorn_totals() %>%
-  adorn_percentages() %>%
-  pivot_longer(cols=2:3, names_to="tst_result_10", values_to = "pct") %>%
-  filter(tst_result_10 != "<10 mm TST" &
-           age_group != "0-4" & is.not.na(age_group))
+  group_by(age_group) %>%
+  summarise(num_tst = n(), 
+            tst_pos = sum(tst_result_10 == ">= 10 mm TST"),
+            pct = tst_pos / num_tst) %>%
+  arrange(desc(pct)) %>%
+  filter(age_group != "0-4" & is.not.na(age_group))
+
+tst_dataset %>%
+  filter(is.not.na(tst_result_10)) %>%
+  tbl_summary(by = age_group, include = c(tst_result_10),
+              digits = ~ 1)
 
 #tst positivity by sex
 tst_dataset %>%
@@ -150,7 +155,11 @@ tst_pos_age_sex <- tst_dataset %>%
          ) %>%
   summarise(num_tst = n(), 
             tst_pos = sum(tst_result_10 == ">= 10 mm TST"),
-            pct = tst_pos / num_tst)
+            pct = tst_pos / num_tst) %>%
+  group_by(sex,age_group) %>%
+  mutate(lower = binom.test(tst_pos, num_tst)$conf.int[1],
+         upper = binom.test(tst_pos, num_tst)$conf.int[2])
+
 
 ##make graph by sex
 basic_sex_pos <- make_tst_pos_graphs(tst_pos_age_sex,"none") +
@@ -173,11 +182,15 @@ ggsave(plot=ggarrange(basic_age_pos,
        "Figures/Figure 2 - TST positivity rate by age group and sex.png",
        width = 1080, height = 1280, units = "px", scale = 2, dpi=300)
 
+
 ##make graph by sex grouped
 grouped_sex_pos <-
   ggplot(data = tst_pos_age_sex, 
-                            aes(x=age_group, y=pct, fill = sex)) +
+                            aes(x=age_group, y=pct, fill = sex,
+                                label=percent(pct, accuracy = 0.1))) +
   geom_bar(stat="identity",position = "dodge") +
+  geom_text(aes(y=.02), color = "black",
+            position = position_dodge(0.9)) +
   theme_classic() +
   theme(panel.background = element_blank(), 
         panel.border = element_blank(),
@@ -188,10 +201,13 @@ grouped_sex_pos <-
     labs(
       x="Age group (years)",
       fill = "Sex") +  # title and caption
-  scale_fill_manual(values=c("#255683","#b6d3ff")) +
-  coord_cartesian(ylim = c(0, 0.5)) +
+  scale_fill_manual(values=c("#FDDE86","#b6d3ff")) +
+  coord_cartesian(ylim = c(0, 0.6)) +
   scale_y_continuous(name="Percent of tuberculin skin tests read >= 10 mm",
-                     labels = percent)
+                     labels = percent) +
+  geom_errorbar(aes(ymin = lower, ymax = upper),
+                width=.2,
+                position = position_dodge(0.9))
 
 #Save grouped bar chart with positivity by age and sex
 ggsave(plot=grouped_sex_pos,
