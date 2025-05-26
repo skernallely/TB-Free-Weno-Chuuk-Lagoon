@@ -73,7 +73,7 @@ make_cascade_graph <- function(data) {
       #title = "LTBI Treatment Cascade for TB-Free Chuuk, 2023",
       #subtitle = "Age >= 5 y.o., Lagoon vs. Weno",
       x = "",
-      y="No. of people") +  # title and caption
+      y="No. of persons") +  # title and caption
     theme_classic() +
     theme(panel.background = element_blank(), 
           panel.border = element_blank(),
@@ -297,9 +297,9 @@ all_cascade_g <-
     #title = "LTBI Treatment Cascade for TB-Free Chuuk, 2023",
     #subtitle = "Age >= 5 y.o., All Chuuk Lagoon",
     x = "",
-    y="Percentage of TST positive people",
+    y="Percentage of TST positive persons",
     # caption = paste("TST: tuberculin skin test",
-    #                 "*People diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from the analysis",
+    #                 "*Persons diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from the analysis",
     #                 "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period",
     #                 sep="\n")
   ) + 
@@ -357,9 +357,9 @@ wl_cascade_g <-
     #title = "LTBI Treatment Cascade for TB-Free Chuuk, 2023",
     #subtitle = "Age >= 5 y.o., All Chuuk Lagoon",
     x = "",
-    y="Percentage of TST positive people",
-    caption = paste("TST: tuberculin skin test; TB: tuberculosis; 3HP: once-weekly rifapentine with isoniazid",
-                    "*People diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from the analysis",
+    y="Percentage of TST positive persons",
+    caption = paste("Abbreviations: TST - tuberculin skin test, TB - tuberculosis, 3HP - once-weekly rifapentine with isoniazid",
+                    "*Persons diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from the analysis",
                     "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period",
                     sep="\n")
   ) + 
@@ -423,9 +423,9 @@ all_cascade_step_g <-
     #title = "LTBI Treatment Cascade for TB-Free Chuuk, 2023",
     #subtitle = "Age >= 5 y.o., All Chuuk Lagoon",
     x = "",
-    y="Percentage of TST positive people",
+    y="Percentage of TST positive persons",
     # caption = paste("TST: tuberculin skin test",
-    #                 "*People diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from the analysis",
+    #                 "*Persons diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from the analysis",
     #                 "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period",
     #                 sep="\n")
   ) +
@@ -476,9 +476,9 @@ wl_cascade_step_g <-
     #title = "LTBI Treatment Cascade for TB-Free Chuuk, 2023",
     #subtitle = "Age >= 5 y.o., All Chuuk Lagoon",
     x = "",
-    y="Percentage of TST positive people",
+    y="Percentage of TST positive persons",
     caption = paste("TST: tuberculin skin test",
-                    "*People diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from the analysis",
+                    "*Persons diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from the analysis",
                     "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period",
                     sep="\n")
   ) +

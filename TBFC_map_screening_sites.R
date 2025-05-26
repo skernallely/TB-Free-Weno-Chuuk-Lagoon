@@ -90,10 +90,10 @@ screening_sites_w_cases <-
     x = "Longitude",
     y = "Latitude",
     color = "Markers",
-    fill = "Cases of tuberculosis per 100,000 people (2013-2021)",
+    fill = "Cases of tuberculosis per 100,000 persons (2013-2021)",
     caption = "
-    Geometries: Chuuk Municipalities, Digital Atlas of Micronesia, 2020; 
-    Case data: Chuuk Department of Health and Social Affairs; Population data: Micronesia Population and Housing Census 2010"
+    Abbreviations: TB - tuberculosis; Geometries: Chuuk Municipalities, Digital Atlas of Micronesia, 2020; 
+  Case data: Chuuk Department of Health and Social Affairs; Population data: Micronesia Population and Housing Census 2010"
   )  +
   guides(
     colour = guide_legend(position = "inside", order = 1),
@@ -101,8 +101,8 @@ screening_sites_w_cases <-
   )  +
   theme_map(12) +
   theme(
-    plot.caption = element_text(hjust = 0),
-    legend.position.inside = c(0, .5),
+    plot.caption = element_text(hjust = -.05),
+    legend.position.inside = c(0.01, .8),
     legend.background = element_blank(),
     plot.background=element_rect(fill="white"),
     panel.background = element_blank(),
