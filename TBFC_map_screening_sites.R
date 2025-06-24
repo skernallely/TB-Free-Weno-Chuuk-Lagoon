@@ -57,14 +57,13 @@ tb_case_data <- merge(chuuk_lagoon_shapefile %>%
                             select(Name,geometry) %>%
                             rename(polygon_name=Name), 
                       island_labels, by = "polygon_name") %>%
-  mutate(rate_labels = case_when(nine_yr_tb_rate == 0 ~ "0",
-                                 nine_yr_tb_rate <= 150 ~ "1-150",
-                                 nine_yr_tb_rate <= 300 ~ "151-300",
-                                 nine_yr_tb_rate <= 450 ~ "301-450",
-                                 nine_yr_tb_rate > 450 ~ "450+"),
-         rate_labels = factor(rate_labels, levels=c("0","1-150",
-                                                    "151-300","301-450",
-                                                    "450+"))) %>%
+  mutate(rate_labels = case_when(nine_yr_tb_rate < 150 ~ "29 to <150",
+                                 nine_yr_tb_rate < 300 ~ "150 to <300",
+                                 nine_yr_tb_rate < 450 ~ "300 to <450",
+                                 nine_yr_tb_rate >= 450 ~ "≥450"),
+         rate_labels = factor(rate_labels, levels=c("29 to <150",
+                                                    "150 to <300","300 to <450",
+                                                    "≥450"))) %>%
   st_as_sf()
 #add a nice base layer?
 # map<-basemap_gglayer(chuuk_lagoon_shapefile, 
@@ -78,8 +77,8 @@ screening_sites_w_cases <-
   geom_sf() +
   geom_sf(data = tb_case_data, aes(fill = rate_labels)) +
   scale_fill_manual(limits = levels(tb_case_data$rate_labels),
-                        values = c("white", "#b6d3ff", "#96b8e4",
-                                   "#4f6e9f", "#2f476b")
+                        values = c("#f1eef6", "#a6c6f5",
+                                   "#6799d0", "#0066a7")
     ) + 
   geom_sf(data = sites, size = 2, shape = 21,
           fill="black", aes(colour = "Villages with high incidence of tuberculosis screened in TB-Free Chuuk")) +
@@ -93,7 +92,7 @@ screening_sites_w_cases <-
     fill = "Cases of tuberculosis per 100,000 persons (2013-2021)",
     caption = "
     Abbreviations: TB - tuberculosis; Geometries: Chuuk Municipalities, Digital Atlas of Micronesia, 2020; 
-  Case data: Chuuk Department of Health and Social Affairs; Population data: Micronesia Population and Housing Census 2010"
+  Case data: Chuuk State Department of Health Services; Population data: Micronesia Population and Housing Census 2010"
   )  +
   guides(
     colour = guide_legend(position = "inside", order = 1),
@@ -102,13 +101,16 @@ screening_sites_w_cases <-
   theme_map(12) +
   theme(
     plot.caption = element_text(hjust = -.05),
-    legend.position.inside = c(0.01, .8),
+    legend.position.inside = c(0.01, .5),
     legend.background = element_blank(),
-    plot.background=element_rect(fill="white"),
-    panel.background = element_blank(),
+    plot.background=element_rect(fill="white",linewidth = 0),    # panel.background = element_blank(),
     panel.border = element_blank(),
-    panel.grid.major = element_blank(), panel.grid.minor = element_blank()
-  )
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.margin=grid::unit(c(0,0,0,0), "mm")
+  ) +
+  labs(x = NULL, y = NULL)
+
 
 #future map file path
 map_file <- "Figures/Figure 1 - Map of screening sites with nine year case rate.png"
@@ -116,7 +118,7 @@ map_file <- "Figures/Figure 1 - Map of screening sites with nine year case rate.
 #Save map
 ggsave(plot=screening_sites_w_cases,
        map_file,
-       width = 1280, height = 1020, units = "px", scale = 2, dpi=300)
+       width = 1280, height = 820, units = "px", scale = 2, dpi=300)
 
 #crop the aspect ratio lines
 # plot_crop(map_file)

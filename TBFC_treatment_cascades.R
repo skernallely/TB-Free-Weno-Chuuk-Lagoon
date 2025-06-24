@@ -292,7 +292,7 @@ overall_cascade <- cascade_dataset %>%
 all_cascade_g <-
   overall_cascade %>%
   ggplot(aes(x=category, y=percent)) +
-  geom_bar(stat="identity", fill="#255683") +
+  geom_bar(stat="identity", fill="#4f6e9f") +
   labs(
     #title = "LTBI Treatment Cascade for TB-Free Chuuk, 2023",
     #subtitle = "Age >= 5 y.o., All Chuuk Lagoon",
@@ -352,14 +352,15 @@ wl_cascade_g <-
   mutate(area_fct = factor(area,
                            levels=c("Weno","Lagoon Islands"))) %>%
   ggplot(aes(x=category, y=percent)) +
-  geom_bar(stat="identity", fill="#255683") +
+  geom_bar(stat="identity", fill="#4f6e9f") +
   labs(
     #title = "LTBI Treatment Cascade for TB-Free Chuuk, 2023",
     #subtitle = "Age >= 5 y.o., All Chuuk Lagoon",
     x = "",
     y="Percentage of TST positive persons",
     caption = paste("Abbreviations: TST - tuberculin skin test, TB - tuberculosis, 3HP - once-weekly rifapentine with isoniazid",
-                    "*Persons diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from the analysis",
+                    "*Persons diagnosed with TB disease or who completed preventive treatment within the last three years were",
+                    "excluded from this analysis",
                     "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period",
                     sep="\n")
   ) + 
