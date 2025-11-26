@@ -111,3 +111,15 @@ age_region_ltbi <- ltbi %>%
   
 
 rm(ltbi,age_region_ltbi)
+
+
+##ltbi completion based on the mechanism of referral
+##how many people referred to case conference got ltbi?
+ltbi |>
+  summarise(count = sum(refer_to_conference))
+##what proportion completed treatment, compared to non-case conference
+ltbi |>
+  tabyl(refer_to_conference,completed_yn) |>
+  adorn_percentages() |>
+  adorn_pct_formatting() |>
+  adorn_ns()
