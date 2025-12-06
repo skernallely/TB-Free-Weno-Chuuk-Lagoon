@@ -77,8 +77,8 @@ screening_sites_w_cases <-
   geom_sf() +
   geom_sf(data = tb_case_data, aes(fill = rate_labels)) +
   scale_fill_manual(limits = levels(tb_case_data$rate_labels),
-                        values = c("#f1eef6", "#a6c6f5",
-                                   "#6799d0", "#0066a7")
+                        values = c("#dae8ff", "#b6d3ff",
+                                   "#6e85b7", "#273871")
     ) + 
   geom_sf(data = sites, size = 2, shape = 21,
           fill="black", aes(colour = "Villages with high incidence of tuberculosis screened in TB-Free Chuuk")) +
@@ -89,7 +89,7 @@ screening_sites_w_cases <-
     x = "Longitude",
     y = "Latitude",
     color = "Markers",
-    fill = "Cases of tuberculosis per 100,000 persons (2013-2021)",
+    fill = "Cases of tuberculosis per 100,000 persons (2013–2021)",
     caption = "
     Abbreviations: TB - tuberculosis; Geometries: Chuuk Municipalities, Digital Atlas of Micronesia, 2020; 
   Case data: Chuuk State Department of Health Services; Population data: Micronesia Population and Housing Census 2010"
@@ -101,7 +101,7 @@ screening_sites_w_cases <-
   theme_map(12) +
   theme(
     plot.caption = element_text(hjust = -.05),
-    legend.position.inside = c(0.01, .5),
+    legend.position.inside = c(0.01, .83),
     legend.background = element_blank(),
     plot.background=element_rect(fill="white",linewidth = 0),    # panel.background = element_blank(),
     panel.border = element_blank(),

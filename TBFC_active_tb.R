@@ -4,7 +4,7 @@
 #PACKAGES
 library(tidyverse) #pipes
 library(readxl) #excel load-in
-library(table1)
+# library(table1)
 library(gtsummary) #allows summary tabyl and p-value
 library(cowplot)
 library(scales) #percents for graphs
@@ -180,10 +180,10 @@ tb_outcomes_gg <-
                                       label=percent(pct, accuracy = 0.1))) +
   geom_bar(position="fill", stat="identity") +
   geom_text(aes(label = percent(pct, accuracy = 0.1)), position = position_stack(vjust = 0.5)) +
-  scale_fill_manual(values = c("Completed treatment/Cured" = "#4f6e9f",
-                               "Currently treating" = "#b6d3ff",
+  scale_fill_manual(values = c("Completed treatment/Cured" = "#b6d3ff",
+                               "Currently treating" = "#dae8ff",
                                "Transferred out" = "#FE9D5D",
-                               "Lost to follow-up" = "#FDDE86",
+                               "Lost to follow-up" = "#fdde86",
                                "Died" = "red"),
                     breaks=c("Completed treatment/Cured","Currently treating",
                              "Transferred out",
