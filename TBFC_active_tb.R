@@ -181,7 +181,7 @@ tb_outcomes_gg <-
   geom_bar(position="fill", stat="identity") +
   geom_text(aes(label = percent(pct, accuracy = 0.1)), 
             position = position_stack(vjust = 0.5),
-            size=9, size.unit = "pt") +
+            size=4.5, size.unit = "pt") +
   scale_fill_manual(values = c("Completed treatment/Cured" = "#b6d3ff",
                                "Currently treating" = "#dae8ff",
                                "Transferred out" = "#FE9D5D",
@@ -195,12 +195,22 @@ tb_outcomes_gg <-
   labs(x="Age group (years)",
        fill = "Treatment outcome") +
   theme_classic() + 
-  theme(legend.position = "bottom",
-        text = element_text(size = 12),
-        legend.margin = margin(t = 0, r = 0, b = 0, l = -45, unit = "pt")
+  theme(legend.position = c(.45, -.18), #position legend below chart
+        legend.background = element_blank(), #remove background
+        legend.key.size = unit(2, 'mm'), #adjust size of legend
+        legend.text = element_text(margin=margin(l=2)), #make spacing label and box on legend smaller
+        legend.direction = "horizontal", #get horizontal legend
+        
+        plot.margin = unit(c(0.1,0.1,.5,0.1), "cm"), #change padding
+        
+        axis.line = element_line(linewidth = .25), #change axis lines
+        axis.ticks = element_line(linewidth = .25), #change axis ticks
+        axis.text = element_text(size=4.5), #adjust axis text size
+        
+        text = element_text(size = 6) # change text size
   )
 
 #Save bar chart of tb outcome by 10-year age groups
-ggsave("Figures/Figure 3 - TB treatment outcomes by age group.tiff",
+ggsave("Figures/Figure 3 - TB treatment outcomes by age group.pdf",
        plot = tb_outcomes_gg, 
-       width = 90, height = 72, units = "mm", scale = 2, dpi=300)
+       width = 90, height = 72, units = "mm", dpi=300)

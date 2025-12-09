@@ -58,10 +58,10 @@ tb_case_data <- merge(chuuk_lagoon_shapefile %>%
   mutate(rate_labels = case_when(nine_yr_tb_rate < 150 ~ "29 to <150",
                                  nine_yr_tb_rate < 300 ~ "150 to <300",
                                  nine_yr_tb_rate < 450 ~ "300 to <450",
-                                 nine_yr_tb_rate >= 450 ~ "≥450"),
+                                 nine_yr_tb_rate >= 450 ~ ">=450"),
          rate_labels = factor(rate_labels, levels=c("29 to <150",
                                                     "150 to <300","300 to <450",
-                                                    "≥450"))) %>%
+                                                    ">=450"))) %>%
   st_as_sf()
 #add a nice base layer?
 # map<-basemap_gglayer(chuuk_lagoon_shapefile, 
@@ -73,16 +73,20 @@ tb_case_data <- merge(chuuk_lagoon_shapefile %>%
 screening_sites_w_cases <-
   ggplot(data = chuuk_lagoon_shapefile) +
   geom_sf() +
-  geom_sf(data = tb_case_data, aes(fill = rate_labels)) + # add island case data
+  geom_sf(data = tb_case_data, aes(fill = rate_labels), lwd = 0.2) + # add island case data
   scale_fill_manual(limits = levels(tb_case_data$rate_labels),
                         values = c("#dae8ff", "#b6d3ff",
                                    "#6e85b7", "#273871")
     ) + 
-  geom_sf(data = sites, size = 2, shape = 21, #add villages
+  geom_sf(data = sites, 
+          size = 0.9, lwd = 0.1,
+          shape = 21, #add villages
           fill="black", aes(colour = "Villages with high incidence of tuberculosis screened in TB-Free Chuuk")) +
   scale_color_manual(values = c("Villages with high incidence of tuberculosis screened in TB-Free Chuuk" = "white")) +
-  geom_text(data = island_labels, aes(x, y, label = name), size = 4) + #add island labels
-  coord_sf(xlim = c(332000,383000), ylim = c(803000, 833000), expand = FALSE) + #get map size
+  geom_text(data = island_labels, 
+            size = 2,
+            aes(x, y, label = name) ) + #add island labels
+  coord_sf(xlim = c(332000,383000), ylim = c(802860, 833530), expand = FALSE) + #get map size
   labs( #add basic labels
     x = "Longitude",
     y = "Latitude",
@@ -95,19 +99,20 @@ screening_sites_w_cases <-
   )  +
   guides( #arrange legends together
     colour = guide_legend(position = "inside", order = 1),
-    fill   = guide_legend(position = "inside", ncol = 1, order = 2)
+    fill   = guide_legend(position = "inside", ncol = 1, order = 2,
+                          fill="white")
   )  +
-  theme_map(10) + #change all map text size
+  theme_map(5) + #change all map text size
   theme(
-    plot.caption = element_text(hjust = 0), #move caption to left
+    plot.caption = element_text(size = 4, hjust = .01, vjust=3), #move caption to left
     plot.background=element_rect(fill="white",linewidth = 0), #add white background
     plot.margin=grid::unit(c(0,0,0,0), "mm"), #remove padding
 
-    legend.position.inside = c(0, .65), #move legends to inside 
+    legend.position.inside = c(0, 0.62), #move legends to inside 
     legend.background = element_blank(), #remove white background on legend
-    legend.spacing.y = unit(0, "pt"), #make spacing between two legends smaller
-    legend.key.size = unit(4, 'mm'), #adjust size of legends
-    
+    legend.spacing.y = unit(-4, "pt"), #make spacing between two legends smaller
+    legend.key.size = unit(2.5, 'mm'), #adjust size of legends
+
     panel.background = element_blank(), #remove background of graph
     panel.border = element_blank(), #remove plot border
     panel.grid.major = element_blank(), #remove gridlines
@@ -115,17 +120,16 @@ screening_sites_w_cases <-
   ) +
   labs(x = NULL, y = NULL)
 
-
 #future map file path
-map_file <- "Figures/Figure 1 - Map of screening sites with nine year case rate"
+map_file <- "Figures/Figure 1 - Map of screening sites with nine year case rate.pdf"
 
 #Save map
 ggsave(plot=screening_sites_w_cases,
-       paste0(map_file,".tiff"),
-       width = 90, height = 58, units = "mm", scale = 2, dpi=300)
+       map_file,
+       width = 90, height = 58, units = "mm", dpi=300)
 
 #crop the aspect ratio lines
-# plot_crop(map_file)
+plot_crop(map_file)
 
 
 ##TMAP Version

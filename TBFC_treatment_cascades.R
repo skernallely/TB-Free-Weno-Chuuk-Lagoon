@@ -306,18 +306,35 @@ all_cascade_g <-
   theme_classic() +
   theme(panel.background = element_blank(),
         panel.border = element_blank(),
-        legend.position="bottom",
+        
         legend.title = element_blank(),
-        plot.margin = unit(c(.1,.1,.1,.1), "cm"),
-        plot.caption = element_text(hjust = 0),
-        text = element_text(size = 14)) + 
+        
+        plot.margin = unit(c(0,.1,0,.1), "cm"),
+        plot.caption = element_text(size=4, hjust = 0),
+        
+        text = element_text(size = 5),
+        
+        axis.line = element_line(linewidth = .2), #change axis lines
+        axis.ticks = element_line(linewidth = .1), #change axis ticks
+        axis.ticks.length=unit(.5, "mm"),
+        axis.text = element_text(size=3.5), #adjust axis text size
+        strip.background = element_blank(), #change facet label line size
+        
+        strip.text = element_textbox_simple(
+          size = 3.5, #text size
+          halign = 0.5,  #centered
+          linetype = 1,  #solid line
+          linewidth = .2, #width of box
+          padding = margin(1.5, 0, 1.5, 0), margin = margin(3, 3, 3, 3) #padding in box
+        )
+        ) + 
   facet_wrap( ~ area) + #tile the graphs
   scale_x_discrete(labels = str_wrap(cascade_labels, width = 20)) +
   scale_y_continuous(labels = percent) +  # add commas
   geom_text(aes(label =  paste0(percent(round(percent,2)),'\n',
                                  "N=",label_comma()(count)), 
                  vjust = 1.1),
-             size=12*.36,
+             size=1.5,
              colour="white",
              fontface="bold")
 
@@ -360,27 +377,47 @@ wl_cascade_g <-
     y="Percentage of TST positive persons",
     caption = paste0("Abbreviations: TST - tuberculin skin test, TB - tuberculosis, 3HP - once-weekly rifapentine with isoniazid",
                      "\n",
-                     "*Persons diagnosed with TB disease or who completed preventive treatment within the last three years were",
+                     "*Persons diagnosed with TB disease or who completed preventive treatment within the last three years were excluded from",
                      "\n",
-                     "excluded from this analysis",
+                     "this analysis",
                      "\n",
                      "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period")
   ) + 
   theme_classic() +
+  facet_wrap( ~ area_fct) + #tile the graphs
   theme(panel.background = element_blank(),
         panel.border = element_blank(),
-        legend.position="bottom",
+        
         legend.title = element_blank(),
-        plot.margin = unit(c(.1,.1,.1,.1), "cm"),
-        plot.caption = element_text(hjust = 0),
-        text = element_text(size = 14)) + 
-  facet_wrap( ~ area_fct) + #tile the graphs
+        
+        plot.margin = unit(c(0,.1,0,.1), "cm"),
+        plot.caption = element_text(size=4, 
+                                    hjust = 0,
+                                    margin = margin(0, 0, 2, -20)),
+        
+        text = element_text(size = 5),
+        
+        axis.line = element_line(linewidth = .2), #change axis lines
+        axis.ticks = element_line(linewidth = .1), #change axis ticks
+        axis.ticks.length=unit(.5, "mm"),
+        axis.text = element_text(size=3.5), #adjust axis text size
+        
+        strip.background = element_blank(), #change facet label line size
+        
+        strip.text = element_textbox_simple(
+          size = 3.5, #text size
+          halign = 0.5,  #centered
+          linetype = 1,  #solid line
+          linewidth = .2, #width of box
+          padding = margin(1.5, 0, 1.5, 0), margin = margin(3, 3, 3, 3) #padding in box
+          )
+        ) + 
   scale_x_discrete(labels = str_wrap(cascade_labels, width = 10)) +
   scale_y_continuous(labels = percent) +  # add commas
   geom_text(aes(label =  paste0(percent(round(percent,2)),'\n',
                                 "N=",label_comma()(count)), 
                 vjust = 1.1),
-            size=12*.36,
+            size=1.5,
             colour="white",
             fontface="bold")
 
@@ -394,8 +431,8 @@ ggsave(plot=ggarrange(all_cascade_g,
                       label.x = 0,
                       legend = "bottom",
                       nrow = 2),
-       "Figures/Figure 4 - LTBI Treatment Cascade Bar version.tiff",
-       width = 82, height = 90, units = "mm", scale = 2.7, dpi=300)
+       "Figures/Figure 4 - LTBI Treatment Cascade Bar version.pdf",
+       width = 82, height = 90, units = "mm", dpi=300)
 #-----------------------------------------
 ####CASCADE GRAPHS IN STEP VERSION
 
