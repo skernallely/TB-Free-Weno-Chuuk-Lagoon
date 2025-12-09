@@ -4,7 +4,7 @@
 #PACKAGES
 library(tidyverse) #pipes
 library(readxl) #excel load-in
-# library(table1)
+library(table1)
 library(gtsummary) #allows summary tabyl and p-value
 library(cowplot)
 library(scales) #percents for graphs
@@ -179,7 +179,9 @@ tb_outcomes_gg <-
   ggplot(data = tb_outcomes_data, aes(x=labels, y=pct, fill=fct_rev(tb_outcome_clean),
                                       label=percent(pct, accuracy = 0.1))) +
   geom_bar(position="fill", stat="identity") +
-  geom_text(aes(label = percent(pct, accuracy = 0.1)), position = position_stack(vjust = 0.5)) +
+  geom_text(aes(label = percent(pct, accuracy = 0.1)), 
+            position = position_stack(vjust = 0.5),
+            size=9, size.unit = "pt") +
   scale_fill_manual(values = c("Completed treatment/Cured" = "#b6d3ff",
                                "Currently treating" = "#dae8ff",
                                "Transferred out" = "#FE9D5D",
@@ -194,11 +196,11 @@ tb_outcomes_gg <-
        fill = "Treatment outcome") +
   theme_classic() + 
   theme(legend.position = "bottom",
-        text = element_text(size = 14),
-        legend.margin = margin(t = 0, r = 0, b = 0, l = -45, unit = "pt"),
-        )
+        text = element_text(size = 12),
+        legend.margin = margin(t = 0, r = 0, b = 0, l = -45, unit = "pt")
+  )
 
 #Save bar chart of tb outcome by 10-year age groups
-ggsave("Figures/Figure 3 - TB treatment outcomes by age group.png",
+ggsave("Figures/Figure 3 - TB treatment outcomes by age group.tiff",
        plot = tb_outcomes_gg, 
-       width = 1280, height = 1024, units = "px", scale = 2, dpi=300)
+       width = 90, height = 72, units = "mm", scale = 2, dpi=300)

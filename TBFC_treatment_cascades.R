@@ -358,11 +358,13 @@ wl_cascade_g <-
     #subtitle = "Age >= 5 y.o., All Chuuk Lagoon",
     x = "",
     y="Percentage of TST positive persons",
-    caption = paste("Abbreviations: TST - tuberculin skin test, TB - tuberculosis, 3HP - once-weekly rifapentine with isoniazid",
-                    "*Persons diagnosed with TB disease or who completed preventive treatment within the last three years were",
-                    "excluded from this analysis",
-                    "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period",
-                    sep="\n")
+    caption = paste0("Abbreviations: TST - tuberculin skin test, TB - tuberculosis, 3HP - once-weekly rifapentine with isoniazid",
+                     "\n",
+                     "*Persons diagnosed with TB disease or who completed preventive treatment within the last three years were",
+                     "\n",
+                     "excluded from this analysis",
+                     "\n",
+                     "§Treatment considered complete if person took 11 or more doses of 3HP treatment within 16-week period")
   ) + 
   theme_classic() +
   theme(panel.background = element_blank(),
@@ -392,8 +394,8 @@ ggsave(plot=ggarrange(all_cascade_g,
                       label.x = 0,
                       legend = "bottom",
                       nrow = 2),
-       "Figures/Figure 4 - LTBI Treatment Cascade Bar version.png",
-       width = 5, height = 5.5, units = "in", scale = 1.75, dpi=300)
+       "Figures/Figure 4 - LTBI Treatment Cascade Bar version.tiff",
+       width = 82, height = 90, units = "mm", scale = 2.7, dpi=300)
 #-----------------------------------------
 ####CASCADE GRAPHS IN STEP VERSION
 

@@ -190,14 +190,15 @@ grouped_sex_pos <-
                                 label=percent(pct, accuracy = 0.1))) +
   geom_bar(stat="identity",position = "dodge") +
   geom_text(aes(y=.02), color = "black",
-            position = position_dodge(0.9)) +
+            position = position_dodge(0.9),
+            size=9, size.unit = "pt") +
   theme_classic() +
   theme(panel.background = element_blank(), 
         panel.border = element_blank(),
         legend.position="bottom",
         legend.background = element_blank(),
         plot.margin = unit(c(0.1,0.1,0.1,0.1), "cm"),
-        text = element_text(size = 14))  + # turn off minor 
+        text = element_text(size = 12))  + # turn off minor 
     labs(
       x="Age group (years)",
       fill = "Sex") +  # title and caption
@@ -211,8 +212,8 @@ grouped_sex_pos <-
 
 #Save grouped bar chart with positivity by age and sex
 ggsave(plot=grouped_sex_pos,
-       "Figures/Figure 2 - Grouped TST positivity rate by age and sex.png",
-       width = 1280, height = 1024, units = "px", scale = 2, dpi=300)
+       "Figures/Figure 2 - Grouped TST positivity rate by age and sex.tiff",
+       width = 90, height = 72, units = "mm", scale = 2, dpi=300)
 
 #---------------------------
 

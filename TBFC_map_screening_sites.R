@@ -2,6 +2,7 @@
 ## Screened Villages Map
 
 #PACKAGES
+library(here)
 library(sp)
 library(sf)
 library(tidyverse)
@@ -9,9 +10,6 @@ library(readxl)
 library(ggthemes)
 library(ggpubr)
 library(knitr)
-
-#set WD
-setwd("~/PIHOA/TBFC/R Analysis/Weno_Chuuk_Lagoon")
 
 # Load the shapefile
 chuuk_lagoon_shapefile <- st_read(
@@ -75,50 +73,56 @@ tb_case_data <- merge(chuuk_lagoon_shapefile %>%
 screening_sites_w_cases <-
   ggplot(data = chuuk_lagoon_shapefile) +
   geom_sf() +
-  geom_sf(data = tb_case_data, aes(fill = rate_labels)) +
+  geom_sf(data = tb_case_data, aes(fill = rate_labels)) + # add island case data
   scale_fill_manual(limits = levels(tb_case_data$rate_labels),
                         values = c("#dae8ff", "#b6d3ff",
                                    "#6e85b7", "#273871")
     ) + 
-  geom_sf(data = sites, size = 2, shape = 21,
+  geom_sf(data = sites, size = 2, shape = 21, #add villages
           fill="black", aes(colour = "Villages with high incidence of tuberculosis screened in TB-Free Chuuk")) +
   scale_color_manual(values = c("Villages with high incidence of tuberculosis screened in TB-Free Chuuk" = "white")) +
-  geom_text(data = island_labels, aes(x, y, label = name), size = 5) +
-  coord_sf(xlim = c(332000,383000), ylim = c(803000, 833000), expand = FALSE) +
-  labs(
+  geom_text(data = island_labels, aes(x, y, label = name), size = 4) + #add island labels
+  coord_sf(xlim = c(332000,383000), ylim = c(803000, 833000), expand = FALSE) + #get map size
+  labs( #add basic labels
     x = "Longitude",
     y = "Latitude",
     color = "Markers",
     fill = "Cases of tuberculosis per 100,000 persons (2013–2021)",
-    caption = "
-    Abbreviations: TB - tuberculosis; Geometries: Chuuk Municipalities, Digital Atlas of Micronesia, 2020; 
-  Case data: Chuuk State Department of Health Services; Population data: Micronesia Population and Housing Census 2010"
+    caption = paste0(
+    "Abbreviations: TB - tuberculosis; Geometries: Chuuk Municipalities, Digital Atlas of Micronesia, 2020;",
+    "\n",
+    "Case data: Chuuk State Department of Health Services; Population data: Micronesia Population and Housing Census 2010")
   )  +
-  guides(
+  guides( #arrange legends together
     colour = guide_legend(position = "inside", order = 1),
     fill   = guide_legend(position = "inside", ncol = 1, order = 2)
   )  +
-  theme_map(12) +
+  theme_map(10) + #change all map text size
   theme(
-    plot.caption = element_text(hjust = -.05),
-    legend.position.inside = c(0.01, .83),
-    legend.background = element_blank(),
-    plot.background=element_rect(fill="white",linewidth = 0),    # panel.background = element_blank(),
-    panel.border = element_blank(),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    plot.margin=grid::unit(c(0,0,0,0), "mm")
+    plot.caption = element_text(hjust = 0), #move caption to left
+    plot.background=element_rect(fill="white",linewidth = 0), #add white background
+    plot.margin=grid::unit(c(0,0,0,0), "mm"), #remove padding
+
+    legend.position.inside = c(0, .65), #move legends to inside 
+    legend.background = element_blank(), #remove white background on legend
+    legend.spacing.y = unit(0, "pt"), #make spacing between two legends smaller
+    legend.key.size = unit(4, 'mm'), #adjust size of legends
+    
+    panel.background = element_blank(), #remove background of graph
+    panel.border = element_blank(), #remove plot border
+    panel.grid.major = element_blank(), #remove gridlines
+    panel.grid.minor = element_blank(), #remove gridlines
   ) +
   labs(x = NULL, y = NULL)
 
 
 #future map file path
-map_file <- "Figures/Figure 1 - Map of screening sites with nine year case rate.png"
+map_file <- "Figures/Figure 1 - Map of screening sites with nine year case rate"
 
 #Save map
 ggsave(plot=screening_sites_w_cases,
-       map_file,
-       width = 1280, height = 820, units = "px", scale = 2, dpi=300)
+       paste0(map_file,".tiff"),
+       width = 90, height = 58, units = "mm", scale = 2, dpi=300)
 
 #crop the aspect ratio lines
 # plot_crop(map_file)
