@@ -10,6 +10,7 @@ library(readxl)
 library(ggthemes)
 library(ggpubr)
 library(knitr)
+library(ggspatial) #add nice compass rose and scale
 
 # Load the shapefile
 chuuk_lagoon_shapefile <- st_read(
@@ -120,8 +121,15 @@ screening_sites_w_cases <-
   ) +
   labs(x = NULL, y = NULL)
 
+#add scale and north?
+# screening_sites_w_cases +
+#   annotation_north_arrow(location = "tr", which_north = "true", 
+#                          pad_x = unit(0.75, "in"), pad_y = unit(0.5, "in"),
+#                          style = north_arrow_fancy_orienteering) +
+#   annotation_scale(location = "tr") 
+
 #future map file path
-map_file <- "Figures/Figure 1 - Map of screening sites with nine year case rate.pdf"
+map_file <- "Figures/testFigure 1 - Map of screening sites with nine year case rate.pdf"
 
 #Save map
 ggsave(plot=screening_sites_w_cases,
