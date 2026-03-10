@@ -57,7 +57,13 @@ tst_dataset <- read_excel("Data/tbfc_analysis_dataset.xlsx",
   filter(tst_read_yn != "No TST") %>%
   mutate(region = case_when(region %in% c("MORT",
                                           "NW") ~ "NORTHERN NAMONEAS",
-                            .default = region))
+                            .default = region)) |>
+  mutate(area = case_when(region %in% c("FAICHUUK",
+                                        "SOUTHERN NAMONEAS") ~ "LAGOON",
+                          .default = "WENO"))
+
+lagoon_list <- c("WENO","PAATA","ONEI","TOL","POLLE","UDOT","FEFEN",
+                 "UMAN", "TONOAS")
 
 #------------------------------
 
@@ -112,8 +118,8 @@ tst_dataset %>%
 
 ##positivity by sex, age_group and island
 tst_dataset %>%
-  filter(is.not.na(tst_result_10) & age_group != "0-4" & is.not.na(age_group) &
-           municipality %in% toupper(island_labels$name)) %>%
+  filter(is.not.na(tst_result_10) & age_group != "0-4" & is.not.na(age_group) 
+         & municipality %in% lagoon_list) %>%
   group_by(sex,municipality,age_group) %>%
   mutate(sex = case_when(sex == 'F' ~ 'Female',
                          sex == 'M' ~ 'Male',

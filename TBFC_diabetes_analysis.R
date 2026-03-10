@@ -19,7 +19,7 @@ is.not.na <- function(x) !is.na(x)
 diabetes_analysis <- read_excel("Data/tbfc_analysis_dataset.xlsx",
                             guess_max = 20000, col_names = TRUE) %>%
   mutate(tested_with_a1c = is.not.na(a1c)) %>%
-  filter(age >= 18)
+  filter(age >= 18 & screened_at_clinic==1) #get only adults that were screened
 
 #number of people 18+ tested with HbA1c for diabetes
 diabetes_analysis %>%
@@ -47,3 +47,11 @@ diabetes_analysis %>%
 
 
 ##TB and Diabetes
+diabetes_analysis |>
+  filter(is.not.na(dm_a1c_result)) |>
+  tabyl(tb_classification,dm_a1c_result) |>
+  adorn_totals(c("row","col")) |>
+  adorn_percentages() |>
+  adorn_pct_formatting() |>
+  adorn_ns()
+  

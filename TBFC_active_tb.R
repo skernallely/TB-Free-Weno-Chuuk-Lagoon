@@ -2,13 +2,15 @@
 ## Active TB Diagnosis and Outcomes
 
 #PACKAGES
-library(tidyverse) #pipes
-library(readxl) #excel load-in
-library(table1)
-library(gtsummary) #allows summary tabyl and p-value
-library(cowplot)
-library(scales) #percents for graphs
-library(janitor)
+pacman::p_load(
+  tidyverse,
+  readxl,
+  table1,
+  cowplot,
+  janitor,
+  scales,
+  gtsummary
+)
 
 #formulas
 `%notin%` <- Negate(`%in%`)
@@ -64,7 +66,14 @@ screened <- read_excel("Data/tbfc_analysis_dataset.xlsx",
                             levels=c("0-4","5-9","10-19","20-39","40-59","60+")),
          
          region = case_when(region == "NW" | region == "MORT" ~ "NORTHERN NAMONEAS",
-                            .default = region)
+                            .default = region),
+         sputum_yn = case_when(is.not.na(xpert_result_1) & xpert_result_1 %notin% c("Not done") ~ 1,
+                               is.not.na(xpert_result_1) ~ 0,
+                               .default=NA),
+         positive = case_when(lab_confirmed == 1 ~ 1,
+                              grepl("positive",sputum_2_result) ~1,
+                              grepl("MTB detected, Rif not",xpert_result_1) ~ 1,
+                              .default=NA)
   )
 
 #Number of possible cases of TB referred
@@ -79,13 +88,19 @@ screened %>%
 screened %>% 
   summarise(rate= sum(active_tb_tx == 1) / n() * 100000)
 
-#number of active TB cases that were lab confirmed
-screened %>% 
-  summarise(n= sum(lab_confirmed, na.rm=T))
-
 #number needed to screen to diagnose one active TB case
 screened %>% 
   summarise(n= n() / sum(active_tb_tx == 1))
+
+#number with sputum from those with active TB
+screened |>
+  filter(active_tb_tx==1) |>
+  summarise(n= sum(sputum_yn == 1, na.rm=T))
+
+#number of active TB cases that were lab confirmed
+screened |>
+  filter(active_tb_tx==1) |>
+  summarise(n= sum(positive, na.rm=T))
 
 #descriptive factors for TB cases
 screened %>% 

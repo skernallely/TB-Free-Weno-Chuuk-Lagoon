@@ -6,6 +6,7 @@ library(tidyverse) #pipes, scales, lubridate, stringr
 library(readxl) #excel load-in
 library(janitor) #allows tabyl & cleaning names
 library(gtsummary) #allows summary tabyl and p-value
+library(furniture)
 
 #formulas
 `%notin%` <- Negate(`%in%`)
@@ -32,21 +33,22 @@ tbfc_analysis <- read_excel("Data/tbfc_analysis_dataset.xlsx",
                           .default = "WENO")
   )
 
+#supplemental table 1
+furniture::table1(tbfc_analysis, #data
+                  age_group,sex,area, #vars
+                  splitby=~screened_at_clinic,  #cols
+                  total=T,  #add total col
+                  na.rm = FALSE, #don't remove NAs
+                  row_wise = T) #get rowwise percents
 
 #clinic return data by age group and sex
 tbfc_analysis %>%
   group_by() %>%
-  tabyl(age_group, screened_at_clinic, sex) %>%
-  # adorn_percentages()
-  adorn_totals("col")
-
-#clinic return data by age group and sex
-tbfc_analysis %>%
-  group_by() %>%
-  tabyl(area, screened_at_clinic, sex) %>%
-  # adorn_percentages()
-  adorn_totals("col")
-
+  tabyl(age_group, screened_at_clinic, sex) |>
+  adorn_totals("col") |>
+  adorn_percentages() |>
+  adorn_pct_formatting() |>
+  adorn_ns()
 
 #chi square of screened at clinic by sex
 tbfc_analysis %>%

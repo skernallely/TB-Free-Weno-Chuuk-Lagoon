@@ -10,18 +10,22 @@
 #LTBI - 20% | #Active TB - 1.1%
 
 #PACKAGES
-library(tidyverse) #pipes
-library(readxl) #excel load-in
-library(lubridate) #dealing with dates
-library(stringr) #dealing with strings
-library(vtable) #allows sumtable
-library(janitor) #allows tabyl & cleaning names
-library(ggplot2) #make graphs
-library(ggpubr) #special aggregate of plots
-library(ggthemes) #makes prettier graphs
-library(gridExtra) #tiled grid of plots
-library(scales) #percent
-library(gtsummary)
+pacman::p_load(
+  tidyverse, #pipes
+  readxl, #excel load-in
+  lubridate, #dealing with dates
+  stringr, #dealing with strings
+  vtable, #allows sumtable
+  janitor, #allows tabyl & cleaning names
+  ggplot2, #make graphs
+  ggpubr, #special aggregate of plots
+  ggthemes, #makes prettier graphs
+  gridExtra, #tiled grid of plots
+  scales, #percent
+  gtsummary,
+  ggtext
+)
+
 
 #formulas
 `%notin%` <- Negate(`%in%`)
@@ -159,7 +163,9 @@ cascade_dataset <- read_excel("Data/tbfc_analysis_dataset.xlsx") %>%
                                          grepl("completion",epi_status)  ~ 1,
                                        is.not.na(epi_status) ~ 0),
          tst_place_visit = case_when(tst_read_yn == "No TST" ~ "N",
-                                     .default = "Y")) %>%
+                                     .default = "Y"),
+         treatment_stop_reason = case_when(ltbi_tx_completed == 1 ~ "Completed all treatment",
+                                           .default=treatment_stop_reason)) %>%
   filter(screened_at_clinic == 1)
 
 #BASIC COUNTS
@@ -244,7 +250,7 @@ cascade_dataset %>%
 
 #most common reasons for failure to complete ltbi treatment
 cascade_dataset %>%
-  filter(ltbi_tx_completed != 1 & ltbi_diagnosis ==1) %>%
+  filter(ltbi_diagnosis ==1) %>%
   tabyl(treatment_stop_reason) %>%
   adorn_totals()
 
@@ -265,7 +271,8 @@ cascade_dataset %>%
 
 ### OVERALL CHUUK LAGOON CASCADE
 #Cascade data
-overall_cascade <- cascade_dataset %>%
+overall_cascade <- cascade_dataset |>
+  filter(ltbi_diagnosis==1) |>
   summarise(
     #number of patients with an ltbi diagnosis def as having ltbi_treatment_id and not id as active in CC
     no_ltbi_diagnosis = sum(ltbi_diagnosis == 1),
@@ -339,7 +346,8 @@ all_cascade_g <-
              fontface="bold")
 
 #Weno and lagoon cascade data
-wl_cascade <- cascade_dataset %>%
+wl_cascade <- cascade_dataset |>
+  filter(ltbi_diagnosis==1) |>
   group_by(area) %>%
   filter(is.not.na(area)) %>%
   summarise(
@@ -558,6 +566,7 @@ ggsave(plot=ggarrange(all_cascade_step_g,
 
 #village cascade
 village_cascade <- cascade_dataset %>%
+  filter(ltbi_diagnosis==1) |>
   group_by(full_village_name) %>%
   filter(is.not.na(full_village_name)) %>%
   summarise(

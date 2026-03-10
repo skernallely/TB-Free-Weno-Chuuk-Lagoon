@@ -12,6 +12,7 @@ library(janitor) #allows tabyl & cleaning names
 library(scales) #percent
 library(table1) #make table 1111
 library(naniar)
+library(gtsummary)
 
 
 
@@ -91,16 +92,25 @@ screened <- read_excel("Data/tbfc_analysis_dataset.xlsx",
          )
   )
 
+
 #table of demographic characteristics for TBFC
 ##TABLE 1
 table1(~ age + factor(sex) + factor(region) + factor(known_tb_exposure) +
-         factor(prior_tb) + factor(al_one_symptom) + factor(abnormal_xray) +
-         bmi+ factor(current_smoker),
+         factor(al_one_symptom) + factor(prior_tb) + factor(abnormal_xray),
        render.continuous = render.NEW,
        render.categorical = \(x)  c("", sapply(stats.apply.rounding(stats.default(x)), 
                                                function(y) with(y,sprintf("%s (%s%%)", prettyNum(FREQ, big.mark=","), PCT)))), 
        overall=c(left="Total"),
        data=screened)
+
+##TABLE 1 ADULT INFO
+table1(~ bmi+ factor(current_smoker),
+       render.continuous = render.NEW,
+       render.categorical = \(x)  c("", sapply(stats.apply.rounding(stats.default(x)), 
+                                               function(y) with(y,sprintf("%s (%s%%)", prettyNum(FREQ, big.mark=","), PCT)))), 
+       overall=c(left="Total"),
+       data=screened |>
+         filter(age >= 18))
 
 #tst result by tb classification
 table1(~ factor(tst_result_10) + factor(hd_prev_given) + factor(ltbi_tx_started)
