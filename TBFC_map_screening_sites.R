@@ -11,6 +11,7 @@ library(ggthemes)
 library(ggpubr)
 library(knitr)
 library(ggspatial) #add nice compass rose and scale
+library(cowplot)
 
 # Load the shapefile
 chuuk_lagoon_shapefile <- st_read(
@@ -75,10 +76,11 @@ screening_sites_w_cases <-
   ggplot(data = chuuk_lagoon_shapefile) +
   geom_sf() +
   geom_sf(data = tb_case_data, aes(fill = rate_labels), lwd = 0.2) + # add island case data
-  scale_fill_manual(limits = levels(tb_case_data$rate_labels),
-                        values = c("#dae8ff", "#b6d3ff",
-                                   "#6e85b7", "#273871")
-    ) + 
+  # scale_fill_manual(limits = levels(tb_case_data$rate_labels),
+  #                       values = c("#dae8ff", "#b6d3ff",
+  #                                  "#6e85b7", "#273871")
+  #   ) + 
+  scale_fill_brewer(palette="Oranges") + 
   geom_sf(data = sites, 
           size = 0.9, lwd = 0.1,
           shape = 21, #add villages
@@ -87,7 +89,8 @@ screening_sites_w_cases <-
   geom_text(data = island_labels, 
             size = 2,
             aes(x, y, label = name) ) + #add island labels
-  coord_sf(xlim = c(332000,383000), ylim = c(802860, 833530), expand = FALSE) + #get map size
+  # coord_sf(xlim = c(332000,383000), ylim = c(802860, 833530), expand = FALSE) + #old map size
+    coord_sf(xlim = c(328000,383000), ylim = c(800560, 833580), expand = FALSE) + #get map size
   labs( #add basic labels
     x = "Longitude",
     y = "Latitude",
@@ -96,7 +99,7 @@ screening_sites_w_cases <-
     caption = paste0(
     "Abbreviations: TB - tuberculosis; Geometries: Chuuk Municipalities, Digital Atlas of Micronesia, 2020;",
     "\n",
-    "Case data: Chuuk State Department of Health Services; Population data: Micronesia Population and Housing Census 2010")
+    " Case data: Chuuk State Department of Health Services; Population data: Micronesia Population and Housing Census 2010")
   )  +
   guides( #arrange legends together
     colour = guide_legend(position = "inside", order = 1),
@@ -105,13 +108,13 @@ screening_sites_w_cases <-
   )  +
   theme_map(5) + #change all map text size
   theme(
-    plot.caption = element_text(size = 4, hjust = .01, vjust=3), #move caption to left
-    plot.background=element_rect(fill="white",linewidth = 0), #add white background
+    plot.caption = element_text(size = 4, hjust = 0.04, vjust=3), #move caption to left
+    plot.background=element_rect(fill="#cfecfc",linewidth = 0), #add white background
     plot.margin=grid::unit(c(0,0,0,0), "mm"), #remove padding
 
-    legend.position.inside = c(0, 0.62), #move legends to inside 
+    legend.position.inside = c(.01, 0.81), #move legends to inside 
     legend.background = element_blank(), #remove white background on legend
-    legend.spacing.y = unit(-4, "pt"), #make spacing between two legends smaller
+    legend.spacing.y = unit(1, "pt"), #make spacing between two legends smaller
     legend.key.size = unit(2.5, 'mm'), #adjust size of legends
 
     panel.background = element_blank(), #remove background of graph
@@ -120,7 +123,7 @@ screening_sites_w_cases <-
     panel.grid.minor = element_blank(), #remove gridlines
   ) +
   labs(x = NULL, y = NULL)
-
+screening_sites_w_cases
 #add scale and north?
 # screening_sites_w_cases +
 #   annotation_north_arrow(location = "tr", which_north = "true", 
@@ -128,63 +131,102 @@ screening_sites_w_cases <-
 #                          style = north_arrow_fancy_orienteering) +
 #   annotation_scale(location = "tr") 
 
+#get world data
+world <- map_data("world")
+
+
+#map inset map group = group connects the points in the correct order
+inset<-ggplot(data = world, aes(x = long, y = lat, group=group)) + 
+  geom_polygon(fill="#fff") +
+  coord_sf(xlim = c(120, 180), ylim = c(-20, 40)) + #get only the wpro region
+  geom_point(data = sites |> ungroup()|> select(lon,lat) |> slice(1), #add red dot for Chuuk Lagoon
+             mapping = aes(x = lon, y = lat, group=NA), colour = "red", size = 0.2) + 
+  # geom_rect(aes(xmin = 140, xmax = 170, ymin = 0, ymax = 10), color = "white", linewidth=.2, fill = NA) + #Add red box for FSM
+  theme_map(5) + #change all map text size
+  theme(
+    plot.background=element_rect(fill="#cfecfc",linewidth = 0), #add background
+    plot.margin=grid::unit(c(0,0,0,0), "mm"), #remove padding
+    
+    panel.background = element_blank(), #remove background of graph
+    panel.border = element_rect(color = "black"), #remove plot border
+    
+    panel.grid.major = element_line(color = "lightgrey", #change major lines to grey
+                                  size = 0.1,
+                                  linetype = 1),
+    panel.grid.minor = element_blank(), #remove minor gridlines
+  ) +
+  labs(x = NULL, y = NULL)
+
+
+#create final map with cowplot
+final_map<-ggdraw(screening_sites_w_cases) +
+  draw_plot(
+    {inset},
+    x = -0.04, # distance along a (0,1) x-axis to draw the left edge of the plot
+    y = .075, # distance along a (0,1) y-axis to draw the bottom edge of the plot
+    # below, enter width and height of the plot expressed as proportion of the entire ggdraw object
+    width = 0.3, 
+    height = 0.3)
+
+
+
 #future map file path
-map_file <- "Figures/testFigure 1 - Map of screening sites with nine year case rate.pdf"
+map_file <- "Figures/Figure 1 - Map of screening sites with inset.pdf"
 
 #Save map
-ggsave(plot=screening_sites_w_cases,
+ggsave(plot=final_map,
        map_file,
        width = 90, height = 58, units = "mm", dpi=300)
 
 #crop the aspect ratio lines
 plot_crop(map_file)
 
-
-##TMAP Version
-library(tmap)
-library(tmaptools)
-
-#change default tmap display to View
-# tmap_mode("plot")
-
-#remove double checking of polygons
-tmap_options(check.and.fix = TRUE)
-
-# Load the shapefile
-chuuk_lagoon_shapefile <- st_read(
-  "Map Files/5-08_Census_population/chk_census_population_2010.shp") 
-
-#set the CRS for the Chuuk file to EPSG 32656
-chuuk_lagoon_shapefile  <- chuuk_lagoon_shapefile %>% st_set_crs(32656)
-
-#reproject the shapefile with the added CRS
-chuuk_lagoon_shapefile  <- chuuk_lagoon_shapefile %>% st_transform(32656)
-
-# Load the screened village data
-sites <- read_excel("Map Files/villages_lat_long.xlsx") %>%
-  rename(name = village, lon = village_longitude, lat = village_lat)
-
-# Create a spatial points data frame
-coordinates(sites) <- ~lon+lat
-
-##make new box
-bbox_new <- st_bbox(c(xmin = 340000, xmax = 380000, ymax = 829000, ymin = 803000), 
-                    crs = st_crs(32656))
-
-#make the new bbox into an sf polygon
-bbox_new <- bbox_new %>%  
-  st_as_sfc() 
-
-# Create the map with the background shapefile
-tm_basemap("Esri.WorldStreetMap") +
-  tm_shape(chuuk_lagoon_shapefile, bbox=bbox_new)  +
-  tm_polygons() +
-  tm_shape(sites) +
-  tm_dots(col = "blue", size = 0.1, popup.vars = "name") +
-  # Save the map
-  tmap_save(screening_map,"Figures/Map_of_screening_sites_test.png")
-
-#work on adding an insert for where Chuuk is
-library(cowplot)
-
-
+# 
+# ##TMAP Version
+# library(tmap)
+# library(tmaptools)
+# 
+# #change default tmap display to View
+# # tmap_mode("plot")
+# 
+# #remove double checking of polygons
+# tmap_options(check.and.fix = TRUE)
+# 
+# # Load the shapefile
+# chuuk_lagoon_shapefile <- st_read(
+#   "Map Files/5-08_Census_population/chk_census_population_2010.shp") 
+# 
+# #set the CRS for the Chuuk file to EPSG 32656
+# chuuk_lagoon_shapefile  <- chuuk_lagoon_shapefile %>% st_set_crs(32656)
+# 
+# #reproject the shapefile with the added CRS
+# chuuk_lagoon_shapefile  <- chuuk_lagoon_shapefile %>% st_transform(32656)
+# 
+# # Load the screened village data
+# sites <- read_excel("Map Files/villages_lat_long.xlsx") %>%
+#   rename(name = village, lon = village_longitude, lat = village_lat)
+# 
+# # Create a spatial points data frame
+# coordinates(sites) <- ~lon+lat
+# 
+# ##make new box
+# bbox_new <- st_bbox(c(xmin = 340000, xmax = 380000, ymax = 829000, ymin = 803000), 
+#                     crs = st_crs(32656))
+# 
+# #make the new bbox into an sf polygon
+# bbox_new <- bbox_new %>%  
+#   st_as_sfc() 
+# 
+# # Create the map with the background shapefile
+# tm_basemap("Esri.WorldStreetMap") +
+#   tm_shape(chuuk_lagoon_shapefile, bbox=bbox_new)  +
+#   tm_polygons() +
+#   tm_shape(sites) +
+#   tm_dots(col = "blue", size = 0.1, popup.vars = "name") +
+#   # Save the map
+#   tmap_save(screening_map,"Figures/Map_of_screening_sites_test.png")
+# 
+# #work on adding an insert for where Chuuk is
+# library(cowplot)
+# 
+# 
