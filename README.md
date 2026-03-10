@@ -36,3 +36,9 @@ Data from [TBFC_HD_analysis.R](https://github.com/skernallely/TB-Free-Weno-Chuuk
 ## Tables 
 1. Table 1. Descriptive statistics of screened persons (N=12,319), TB-Free Chuuk active case finding, Chuuk State, Federated States of Micronesia, May–October 2023
    - [TBFC_descriptive_analysis.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_descriptive_analysis.R)
+
+## Supplemental data
+1. Supplemental Figure 1. Integrated tuberculosis, Hansen’s disease, and noncommunicable disease screening algorithm, TB-Free Chuuk community-wide screening, Chuuk Lagoon, Federated States of Micronesia, May 2023–2024
+2. Supplemental Table 1. Clinic return proportions for people who were registered for screening in the community (n=15,014) by age group, sex, and municipality, TB-Free Chuuk community-wide screening, Chuuk Lagoon, Federated States of Micronesia, May–October 2023
+   - [TBFC_return_rates.R](https://github.com/skernallely/TB-Free-Weno-Chuuk-Lagoon/blob/main/TBFC_return_rates.R)
+
